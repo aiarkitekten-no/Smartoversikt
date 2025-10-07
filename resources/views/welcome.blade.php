@@ -312,11 +312,13 @@
         <div class="absolute inset-0 scanlines-retro"></div>
         
         <div class="flex items-center justify-center h-full relative z-20">
-            <div class="text-center px-8">
+            <div style="text-align: center; padding: 0 2rem;">
                 <!-- MASSIVE GAME OVER TEXT -->
-                <div class="mb-12" style="animation: gameOverGlitch 2s infinite;">
-                    <div class="text-9xl font-black mb-4" 
-                         style="color: #ff0000; 
+                <div style="margin-bottom: 3rem; animation: gameOverGlitch 2s infinite;">
+                    <div style="font-size: 9rem;
+                                font-weight: 900;
+                                margin-bottom: 1rem;
+                                color: #ff0000; 
                                 text-shadow: 
                                     0 0 10px #ff0000,
                                     0 0 20px #ff0000,
@@ -332,21 +334,20 @@
                 </div>
                 
                 <!-- Retro Score Display -->
-                <div class="mb-8 font-mono text-2xl" style="color: #00ffff; text-shadow: 0 0 10px #00ffff;">
-                    <div class="mb-2">YOUR SCORE</div>
-                    <div class="text-6xl font-black" style="color: #ffff00; text-shadow: 0 0 20px #ffff00;">
+                <div style="margin-bottom: 2rem; font-family: monospace; font-size: 1.5rem; color: #00ffff; text-shadow: 0 0 10px #00ffff;">
+                    <div style="margin-bottom: 0.5rem;">YOUR SCORE</div>
+                    <div style="font-size: 4rem; font-weight: 900; color: #ffff00; text-shadow: 0 0 20px #ffff00;">
                         000000
                     </div>
                 </div>
                 
                 <!-- INSERT COIN message -->
-                <div class="mt-12 text-3xl font-bold blink-slow" 
-                     style="color: #ffffff; text-shadow: 0 0 10px #ffffff;">
+                <div style="margin-top: 3rem; font-size: 2rem; font-weight: bold; animation: blinkSlow 1.5s infinite; color: #ffffff; text-shadow: 0 0 10px #ffffff;">
                     INSERT COIN TO CONTINUE
                 </div>
                 
                 <!-- High Score -->
-                <div class="mt-8 text-sm font-mono" style="color: #ff00ff; opacity: 0.7;">
+                <div style="margin-top: 2rem; font-size: 0.875rem; font-family: monospace; color: #ff00ff; opacity: 0.7;">
                     HIGH SCORE: 999999
                 </div>
             </div>
@@ -397,14 +398,14 @@
     <div id="destruct-countdown" class="fixed inset-0 z-[9999] hidden flex items-center justify-center bg-black">
         <div class="absolute inset-0 bg-red-900 opacity-0" id="red-flash"></div>
         <div class="flex items-center justify-center h-full relative z-10">
-            <div class="text-center">
-                <div class="text-8xl font-black text-red-500 mb-4">
+            <div style="text-align: center;">
+                <div style="font-size: 8rem; font-weight: 900; color: #ef4444; margin-bottom: 2rem;">
                     ACCESS DENIED
                 </div>
-                <div class="text-2xl text-red-400 font-mono">
-                    SELF DESTRUCT IN <span id="countdown">5</span>
+                <div style="font-size: 1.5rem; color: #fca5a5; font-family: monospace;">
+                    SELF DESTRUCT IN <span id="countdown" style="font-size: 2rem; font-weight: bold; color: #ff0000;">5</span>
                 </div>
-                <div class="text-sm text-red-300 mt-4 font-mono">
+                <div style="font-size: 0.875rem; color: #fecaca; margin-top: 1rem; font-family: monospace;">
                     UNAUTHORIZED ACCESS ATTEMPT DETECTED
                 </div>
             </div>
