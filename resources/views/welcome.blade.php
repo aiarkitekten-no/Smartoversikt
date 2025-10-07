@@ -462,9 +462,31 @@
                     credentials: 'same-origin'
                 });
                 
-                const data = await response.json();
+                // CRITICAL: Check response status FIRST before trying to parse JSON
+                if (response.status === 302) {
+                    // Redirect response - this should NOT happen with AJAX
+                    // If we get here, something is wrong
+                    console.error('Unexpected redirect response');
+                    btn.disabled = false;
+                    btnText.textContent = '⚡ INITIATE ACCESS ⚡';
+                    initiateSelfDestruct();
+                    return;
+                }
                 
-                if (response.ok && !data.errors) {
+                let data;
+                try {
+                    data = await response.json();
+                } catch (jsonError) {
+                    // If JSON parsing fails, treat as authentication failure
+                    console.error('Failed to parse response JSON', jsonError);
+                    btn.disabled = false;
+                    btnText.textContent = '⚡ INITIATE ACCESS ⚡';
+                    initiateSelfDestruct();
+                    return;
+                }
+                
+                // Check for successful authentication (HTTP 200 and no validation errors)
+                if (response.status === 200 && !data.errors) {
                     // Success - Access Granted
                     playAccessGranted();
                     
@@ -476,12 +498,16 @@
                         window.location.href = '/dashboard';
                     }, 500);
                 } else {
-                    // Failed - SELF DESTRUCT
+                    // Failed authentication - trigger SELF DESTRUCT
+                    // This handles: 422 (validation error), 401 (unauthorized), etc.
+                    console.log('Authentication failed:', response.status, data);
                     btn.disabled = false;
                     btnText.textContent = '⚡ INITIATE ACCESS ⚡';
                     initiateSelfDestruct();
                 }
             } catch (error) {
+                // Network error or other unexpected error
+                console.error('Login error:', error);
                 btn.disabled = false;
                 btnText.textContent = '⚡ INITIATE ACCESS ⚡';
                 initiateSelfDestruct();
