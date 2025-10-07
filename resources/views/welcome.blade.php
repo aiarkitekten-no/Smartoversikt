@@ -307,15 +307,27 @@
     </div>
     
     <!-- Game Over Screen (90s style) -->
-    <div id="gameover-overlay" class="fixed inset-0 z-[9999] hidden bg-black"
-         style="background: linear-gradient(180deg, #000000 0%, #1a0000 50%, #000000 100%);">
+    <div id="gameover-overlay" 
+         style="position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                z-index: 99999;
+                display: none;
+                background: linear-gradient(180deg, #000000 0%, #1a0000 50%, #000000 100%);">
         <div class="absolute inset-0 scanlines-retro"></div>
         
-        <div class="flex items-center justify-center h-full relative z-20">
+        <div style="display: flex; 
+                    align-items: center; 
+                    justify-content: center; 
+                    height: 100%; 
+                    position: relative; 
+                    z-index: 20;">
             <div style="text-align: center; padding: 0 2rem;">
                 <!-- MASSIVE GAME OVER TEXT -->
                 <div style="margin-bottom: 3rem; animation: gameOverGlitch 2s infinite;">
-                    <div style="font-size: 9rem;
+                    <div id="game-over-text" style="font-size: 9rem;
                                 font-weight: 900;
                                 margin-bottom: 1rem;
                                 color: #ff0000; 
@@ -395,17 +407,46 @@
     </style>
     
     <!-- Self Destruct Overlay (countdown) -->
-    <div id="destruct-countdown" class="fixed inset-0 z-[9999] hidden flex items-center justify-center bg-black">
-        <div class="absolute inset-0 bg-red-900 opacity-0" id="red-flash"></div>
-        <div class="flex items-center justify-center h-full relative z-10">
+    <div id="destruct-countdown" 
+         style="position: fixed; 
+                top: 0; 
+                left: 0; 
+                width: 100vw; 
+                height: 100vh; 
+                z-index: 99999; 
+                display: none; 
+                background-color: #000000;">
+        <div style="position: absolute; 
+                    top: 0; 
+                    left: 0; 
+                    width: 100%; 
+                    height: 100%; 
+                    background-color: #7f1d1d; 
+                    opacity: 0;" 
+             id="red-flash"></div>
+        <div style="display: flex; 
+                    align-items: center; 
+                    justify-content: center; 
+                    height: 100%; 
+                    position: relative; 
+                    z-index: 10;">
             <div style="text-align: center;">
-                <div style="font-size: 8rem; font-weight: 900; color: #ef4444; margin-bottom: 2rem;">
+                <div style="font-size: 8rem; 
+                            font-weight: 900; 
+                            color: #ef4444; 
+                            margin-bottom: 2rem;
+                            font-family: 'Orbitron', sans-serif;">
                     ACCESS DENIED
                 </div>
-                <div style="font-size: 1.5rem; color: #fca5a5; font-family: monospace;">
+                <div style="font-size: 1.5rem; 
+                            color: #fca5a5; 
+                            font-family: monospace;">
                     SELF DESTRUCT IN <span id="countdown" style="font-size: 2rem; font-weight: bold; color: #ff0000;">5</span>
                 </div>
-                <div style="font-size: 0.875rem; color: #fecaca; margin-top: 1rem; font-family: monospace;">
+                <div style="font-size: 0.875rem; 
+                            color: #fecaca; 
+                            margin-top: 1rem; 
+                            font-family: monospace;">
                     UNAUTHORIZED ACCESS ATTEMPT DETECTED
                 </div>
             </div>
@@ -745,11 +786,11 @@
                 console.log('⏰ Showing countdown overlay...');
                 
                 // Show destruct countdown overlay - FORCE DISPLAY
-                destructCountdown.classList.remove('hidden');
-                destructCountdown.style.display = 'flex';
+                destructCountdown.style.display = 'block';
                 destructCountdown.style.zIndex = '99999';
-                console.log('Hidden class removed from destruct-countdown');
-                console.log('Display set to flex, z-index:', destructCountdown.style.zIndex);
+                console.log('Countdown overlay display set to block');
+                console.log('Display style:', destructCountdown.style.display);
+                console.log('Z-index:', destructCountdown.style.zIndex);
                 
                 redFlash.classList.add('flash');
                 console.log('Flash class added to red-flash');
@@ -797,15 +838,13 @@
                             console.log('🎮 SHOWING GAME OVER SCREEN 🎮');
                             
                             // Hide countdown overlay
-                            destructCountdown.classList.add('hidden');
                             destructCountdown.style.display = 'none';
                             console.log('Countdown overlay hidden');
                             
                             // Show GAME OVER screen - FORCE DISPLAY
-                            gameoverOverlay.classList.remove('hidden');
                             gameoverOverlay.style.display = 'block';
                             gameoverOverlay.style.zIndex = '99999';
-                            console.log('Game Over overlay visible - hidden class removed');
+                            console.log('Game Over overlay visible - display set to block');
                             console.log('Game Over element:', gameoverOverlay);
                             console.log('Game Over computed style:', window.getComputedStyle(gameoverOverlay).display);
                             console.log('Game Over z-index:', window.getComputedStyle(gameoverOverlay).zIndex);
@@ -817,13 +856,14 @@
                             console.log('Game Over first 500 chars:', gameoverOverlay.innerHTML.substring(0, 500));
                             
                             // Check if text elements exist
-                            const gameOverText = gameoverOverlay.querySelector('.text-9xl');
+                            const gameOverText = document.getElementById('game-over-text');
                             console.log('GAME OVER text element:', gameOverText);
                             if (gameOverText) {
                                 console.log('GAME OVER text content:', gameOverText.textContent);
                                 console.log('GAME OVER text color:', window.getComputedStyle(gameOverText).color);
                                 console.log('GAME OVER text visibility:', window.getComputedStyle(gameOverText).visibility);
                                 console.log('GAME OVER text opacity:', window.getComputedStyle(gameOverText).opacity);
+                                console.log('GAME OVER text font-size:', window.getComputedStyle(gameOverText).fontSize);
                             }
                             
                             // Play retro game over music
