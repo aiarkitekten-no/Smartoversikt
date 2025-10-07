@@ -804,6 +804,22 @@
                             console.log('Game Over element:', gameoverOverlay);
                             console.log('Game Over computed style:', window.getComputedStyle(gameoverOverlay).display);
                             console.log('Game Over z-index:', window.getComputedStyle(gameoverOverlay).zIndex);
+                            console.log('Game Over position:', window.getComputedStyle(gameoverOverlay).position);
+                            console.log('Game Over width:', window.getComputedStyle(gameoverOverlay).width);
+                            console.log('Game Over height:', window.getComputedStyle(gameoverOverlay).height);
+                            console.log('Game Over background:', window.getComputedStyle(gameoverOverlay).background);
+                            console.log('Game Over innerHTML length:', gameoverOverlay.innerHTML.length);
+                            console.log('Game Over first 500 chars:', gameoverOverlay.innerHTML.substring(0, 500));
+                            
+                            // Check if text elements exist
+                            const gameOverText = gameoverOverlay.querySelector('.text-9xl');
+                            console.log('GAME OVER text element:', gameOverText);
+                            if (gameOverText) {
+                                console.log('GAME OVER text content:', gameOverText.textContent);
+                                console.log('GAME OVER text color:', window.getComputedStyle(gameOverText).color);
+                                console.log('GAME OVER text visibility:', window.getComputedStyle(gameOverText).visibility);
+                                console.log('GAME OVER text opacity:', window.getComputedStyle(gameOverText).opacity);
+                            }
                             
                             // Play retro game over music
                             console.log('🎵 Playing Game Over music...');
