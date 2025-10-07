@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>SMARTOVERSIKT - SYSTEM ACCESS</title>
+    <title>SMARTOVERSIKT - SYSTEM ACCESS v2.1</title>
     
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     
@@ -460,6 +460,8 @@
         document.getElementById('login-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             
+            console.log('🔥 SUBMIT HANDLER ACTIVE - V2 🔥');
+            
             const btn = document.getElementById('access-btn');
             const btnText = document.getElementById('btn-text');
             const form = this;
@@ -470,6 +472,8 @@
             try {
                 // Use FormData to send proper form data (not JSON)
                 const formData = new FormData(form);
+                
+                console.log('📡 Sending AJAX request with headers...');
                 
                 const response = await fetch('{{ route("login") }}', {
                     method: 'POST',
