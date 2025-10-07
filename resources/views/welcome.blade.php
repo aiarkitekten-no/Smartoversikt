@@ -286,7 +286,115 @@
         </div>
     </div>
     
-    <script>
+    <!-- Game Over Overlay (90s style) -->
+    <div id="gameover-overlay" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black"></div>
+        <div class="relative flex items-center justify-center h-full">
+            <div class="text-center">
+                <!-- Retro pixel-art style GAME OVER -->
+                <div class="game-over-text mb-8" style="
+                    font-family: 'Courier New', monospace;
+                    font-size: 8rem;
+                    font-weight: 900;
+                    color: #ff0040;
+                    text-shadow: 
+                        4px 4px 0px #000,
+                        8px 8px 0px rgba(255, 0, 64, 0.5),
+                        0 0 20px #ff0040,
+                        0 0 40px #ff0040,
+                        0 0 60px #ff0040;
+                    letter-spacing: 0.5rem;
+                    animation: gameOverGlitch 0.3s infinite;
+                ">
+                    GAME OVER
+                </div>
+                
+                <!-- Retro score display -->
+                <div class="text-4xl font-mono text-cyan-400 mb-4" style="
+                    text-shadow: 
+                        2px 2px 0px #000,
+                        0 0 10px #00ffff;
+                    letter-spacing: 0.3rem;
+                ">
+                    SCORE: 000000
+                </div>
+                
+                <!-- Insert coin message -->
+                <div class="text-2xl font-mono text-yellow-400 mt-8 blink-slow" style="
+                    text-shadow: 
+                        2px 2px 0px #000,
+                        0 0 10px #ffff00;
+                    letter-spacing: 0.2rem;
+                ">
+                    INSERT COIN TO CONTINUE
+                </div>
+                
+                <!-- Retro scanlines effect -->
+                <div class="scanlines-retro"></div>
+            </div>
+        </div>
+    </div>
+    
+    <style>
+        /* Game Over glitch animation */
+        @keyframes gameOverGlitch {
+            0%, 90% { transform: translate(0); }
+            91% { transform: translate(-4px, 2px); }
+            92% { transform: translate(4px, -2px); }
+            93% { transform: translate(-2px, -4px); }
+            94% { transform: translate(2px, 4px); }
+            95%, 100% { transform: translate(0); }
+        }
+        
+        /* Slow blink for INSERT COIN */
+        @keyframes blinkSlow {
+            0%, 49% { opacity: 1; }
+            50%, 100% { opacity: 0; }
+        }
+        
+        .blink-slow {
+            animation: blinkSlow 1.5s infinite;
+        }
+        
+        /* Retro scanlines */
+        .scanlines-retro {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.15),
+                rgba(0, 0, 0, 0.15) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            z-index: 10;
+        }
+    </style>
+    
+    <!-- Self Destruct Overlay (original kept for countdown) -->
+    <div id="destruct-countdown" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-red-900 opacity-0" id="red-flash"></div>
+        <div class="flex items-center justify-center h-full">
+            <div class="text-center">
+                <div class="text-8xl font-black text-red-500 mb-4">
+                    ACCESS DENIED
+                </div>
+                <div class="text-2xl text-red-400 font-mono">
+                    SELF DESTRUCT IN <span id="countdown">5</span>
+                </div>
+                <div class="text-sm text-red-300 mt-4 font-mono">
+                    UNAUTHORIZED ACCESS ATTEMPT DETECTED
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <style>
+        /* Pixel-perfect retro styling */
         // Matrix Rain Effect
         const canvas = document.getElementById('matrix-canvas');
         const ctx = canvas.getContext('2d');
@@ -494,12 +602,69 @@
             });
         }
         
+        // Retro game music (Outrun/Pacman style chiptune)
+        function playGameOverMusic() {
+            const ctx = initAudio();
+            
+            // Classic "Game Over" melody inspired by arcade games
+            // Notes: C4, G3, E3, C3 (descending sad melody)
+            const melody = [
+                { freq: 261.63, duration: 0.4 },  // C4
+                { freq: 196.00, duration: 0.4 },  // G3
+                { freq: 164.81, duration: 0.4 },  // E3
+                { freq: 130.81, duration: 0.8 },  // C3 (longer)
+            ];
+            
+            let time = 0;
+            melody.forEach((note, i) => {
+                setTimeout(() => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    
+                    osc.frequency.value = note.freq;
+                    osc.type = 'square'; // Classic chiptune square wave
+                    
+                    gain.gain.setValueAtTime(0.15, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + note.duration);
+                    
+                    osc.start(ctx.currentTime);
+                    osc.stop(ctx.currentTime + note.duration);
+                }, time * 1000);
+                time += note.duration;
+            });
+            
+            // Add retro arpeggiated bass line (plays throughout)
+            const bassNotes = [130.81, 164.81, 196.00]; // C3, E3, G3
+            for (let i = 0; i < 12; i++) {
+                setTimeout(() => {
+                    const bass = ctx.createOscillator();
+                    const bassGain = ctx.createGain();
+                    
+                    bass.connect(bassGain);
+                    bassGain.connect(ctx.destination);
+                    
+                    bass.frequency.value = bassNotes[i % 3];
+                    bass.type = 'sawtooth'; // Retro bass
+                    
+                    bassGain.gain.setValueAtTime(0.08, ctx.currentTime);
+                    bassGain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
+                    
+                    bass.start(ctx.currentTime);
+                    bass.stop(ctx.currentTime + 0.15);
+                }, i * 200);
+            }
+        }
+        
         // Self Destruct Sequence
         function initiateSelfDestruct() {
             const container = document.getElementById('login-container');
-            const overlay = document.getElementById('destruct-overlay');
+            const destructCountdown = document.getElementById('destruct-countdown');
             const redFlash = document.getElementById('red-flash');
             const countdownEl = document.getElementById('countdown');
+            const gameoverOverlay = document.getElementById('gameover-overlay');
             
             // Play ACCESS DENIED alarm
             playAccessDenied();
@@ -508,8 +673,8 @@
             container.classList.add('shake');
             
             setTimeout(() => {
-                // Show destruct overlay
-                overlay.classList.remove('hidden');
+                // Show destruct countdown overlay
+                destructCountdown.classList.remove('hidden');
                 redFlash.classList.add('flash');
                 
                 // Countdown
@@ -542,9 +707,21 @@
                         document.body.classList.add('explode');
                         redFlash.style.opacity = '1';
                         
+                        // After explosion, show GAME OVER screen
                         setTimeout(() => {
-                            // Reset after explosion
-                            window.location.reload();
+                            // Hide countdown overlay
+                            destructCountdown.classList.add('hidden');
+                            
+                            // Show GAME OVER screen
+                            gameoverOverlay.classList.remove('hidden');
+                            
+                            // Play retro game over music
+                            playGameOverMusic();
+                            
+                            // Return to login after 5 seconds
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 5000);
                         }, 1500);
                     }
                 }, 1000);
