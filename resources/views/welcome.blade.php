@@ -755,29 +755,33 @@
                 
                 // Countdown
                 let count = 5;
+                console.log('⏱️ Starting countdown from:', count);
                 
                 // Play initial countdown beep
                 playCountdownBeep(count);
                 
                 const interval = setInterval(() => {
-                    count--;
-                    countdownEl.textContent = count;
-                    
-                    // Play countdown beep
-                    if (count > 0) {
-                        playCountdownBeep(count);
-                    }
-                    
-                    // Flash screen
-                    redFlash.style.opacity = '0.8';
-                    setTimeout(() => {
-                        redFlash.style.opacity = '0';
-                    }, 100);
-                    
-                    if (count === 0) {
-                        clearInterval(interval);
+                    try {
+                        count--;
+                        console.log('⏱️ Countdown tick:', count);
+                        countdownEl.textContent = count;
                         
-                        console.log('💥 COUNTDOWN REACHED ZERO - EXPLODING! 💥');
+                        // Play countdown beep
+                        if (count > 0) {
+                            playCountdownBeep(count);
+                        }
+                        
+                        // Flash screen
+                        redFlash.style.opacity = '0.8';
+                        setTimeout(() => {
+                            redFlash.style.opacity = '0';
+                        }, 100);
+                        
+                        if (count === 0) {
+                            clearInterval(interval);
+                            console.log('💥 Countdown interval cleared');
+                            
+                            console.log('💥 COUNTDOWN REACHED ZERO - EXPLODING! 💥');
                         
                         // EXPLODE with sound
                         playExplosion();
@@ -825,11 +829,15 @@
                             console.log('🎵 Playing Game Over music...');
                             playGameOverMusic();
                             
-                            // Return to login after 5 seconds
-                            setTimeout(() => {
-                                window.location.reload();
-                            }, 5000);
+                            // DISABLED auto-reload for debugging
+                            console.log('⚠️ Auto-reload DISABLED for debugging - refresh manually');
+                            // setTimeout(() => {
+                            //     window.location.reload();
+                            // }, 5000);
                         }, 1500);
+                    }
+                    } catch (error) {
+                        console.error('❌ Error in countdown interval:', error);
                     }
                 }, 1000);
             }, 500);
