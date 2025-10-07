@@ -25,4 +25,9 @@ Route::middleware(['web', 'auth'])->group(function () {
     
     // Phonero actions
     Route::post('/phonero/call', [App\Http\Controllers\Api\PhoneroController::class, 'clickToDial']);
+    
+    // Quicklinks actions
+    Route::get('/quicklinks', [App\Http\Controllers\Api\QuicklinkController::class, 'index']);
+    Route::post('/quicklinks', [App\Http\Controllers\Api\QuicklinkController::class, 'store']);
+    Route::delete('/quicklinks', [App\Http\Controllers\Api\QuicklinkController::class, 'destroy']);
 });

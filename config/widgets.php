@@ -312,6 +312,18 @@ return [
         ],
 
         // ----------
+        // Tools Widgets
+        // ----------
+
+        'tools.quicklinks' => [
+            'name' => 'Hurtiglenker',
+            'description' => 'Dine personlige hurtiglenker',
+            'category' => 'tools',
+            'refresh_interval' => 3600,
+            'fetcher' => \App\Services\Widgets\ToolsQuicklinksFetcher::class,
+        ],
+
+        // ----------
         // Security Widgets
         // ----------
 
@@ -389,6 +401,11 @@ return [
             'name' => 'Prosjekter',
             'icon' => '📋',
             'color' => 'indigo',
+        ],
+        'tools' => [
+            'name' => 'Verktøy',
+            'icon' => '🔧',
+            'color' => 'purple',
         ],
     ],
 
