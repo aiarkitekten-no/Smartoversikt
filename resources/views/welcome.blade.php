@@ -522,7 +522,10 @@
                 } else if (response.status === 422 || data.success === false) {
                     // 422 = Validation error (wrong credentials)
                     // Trigger the EPIC self-destruct sequence!
-                    console.log('Authentication failed - initiating self-destruct!');
+                    console.log('🚨 Authentication failed - initiating self-destruct!');
+                    console.log('Response status:', response.status);
+                    console.log('Response data:', data);
+                    
                     btn.disabled = false;
                     btnText.textContent = '⚡ INITIATE ACCESS ⚡';
                     initiateSelfDestruct();
@@ -715,11 +718,21 @@
         
         // Self Destruct Sequence
         function initiateSelfDestruct() {
+            console.log('💥 INITIATING SELF DESTRUCT SEQUENCE 💥');
+            
             const container = document.getElementById('login-container');
             const destructCountdown = document.getElementById('destruct-countdown');
             const redFlash = document.getElementById('red-flash');
             const countdownEl = document.getElementById('countdown');
             const gameoverOverlay = document.getElementById('gameover-overlay');
+            
+            console.log('Elements found:', {
+                container: !!container,
+                destructCountdown: !!destructCountdown,
+                redFlash: !!redFlash,
+                countdownEl: !!countdownEl,
+                gameoverOverlay: !!gameoverOverlay
+            });
             
             // Play ACCESS DENIED alarm
             playAccessDenied();
