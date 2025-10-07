@@ -334,28 +334,29 @@
             
             const btn = document.getElementById('access-btn');
             const btnText = document.getElementById('btn-text');
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
+            const form = this;
             
             btnText.textContent = '⚡ AUTHENTICATING ⚡';
             btn.disabled = true;
             
             try {
+                // Use FormData to send proper form data (not JSON)
+                const formData = new FormData(form);
+                
                 const response = await fetch('{{ route("login") }}', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'X-Requested-With': 'XMLHttpRequest',
                         'Accept': 'application/json'
                     },
-                    body: JSON.stringify({
-                        email: email,
-                        password: password,
-                        remember: document.getElementById('remember').checked
-                    })
+                    body: formData,
+                    credentials: 'same-origin'
                 });
                 
-                if (response.ok) {
+                const data = await response.json();
+                
+                if (response.ok && !data.errors) {
                     // Success - Access Granted
                     btnText.textContent = '✓ ACCESS GRANTED ✓';
                     btn.classList.remove('from-cyan-600', 'to-cyan-400');
@@ -366,9 +367,13 @@
                     }, 500);
                 } else {
                     // Failed - SELF DESTRUCT
+                    btn.disabled = false;
+                    btnText.textContent = '⚡ INITIATE ACCESS ⚡';
                     initiateSelfDestruct();
                 }
             } catch (error) {
+                btn.disabled = false;
+                btnText.textContent = '⚡ INITIATE ACCESS ⚡';
                 initiateSelfDestruct();
             }
         });
