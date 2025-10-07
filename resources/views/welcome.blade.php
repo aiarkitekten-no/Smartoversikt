@@ -730,21 +730,31 @@
                     if (count === 0) {
                         clearInterval(interval);
                         
+                        console.log('💥 COUNTDOWN REACHED ZERO - EXPLODING! 💥');
+                        
                         // EXPLODE with sound
                         playExplosion();
                         
                         document.body.classList.add('explode');
                         redFlash.style.opacity = '1';
                         
+                        console.log('⏳ Waiting 1.5s before Game Over...');
+                        
                         // After explosion, show GAME OVER screen
                         setTimeout(() => {
+                            console.log('🎮 SHOWING GAME OVER SCREEN 🎮');
+                            
                             // Hide countdown overlay
                             destructCountdown.classList.add('hidden');
+                            console.log('Countdown overlay hidden');
                             
                             // Show GAME OVER screen
                             gameoverOverlay.classList.remove('hidden');
+                            console.log('Game Over overlay visible - hidden class removed');
+                            console.log('Game Over element:', gameoverOverlay);
                             
                             // Play retro game over music
+                            console.log('🎵 Playing Game Over music...');
                             playGameOverMusic();
                             
                             // Return to login after 5 seconds
