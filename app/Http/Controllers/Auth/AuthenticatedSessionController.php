@@ -24,12 +24,14 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request): RedirectResponse|\Illuminate\Http\JsonResponse
     {
-        // LOG: Authentication attempt
+        // LOG: Authentication attempt details
         \Log::info('Login attempt', [
             'email' => $request->input('email'),
             'ip' => $request->ip(),
             'ajax' => $request->ajax(),
             'wants_json' => $request->wantsJson(),
+            'x_requested_with' => $request->header('X-Requested-With'),
+            'accept' => $request->header('Accept'),
         ]);
         
         try {
@@ -39,23 +41,37 @@ class AuthenticatedSessionController extends Controller
                 'email' => $request->input('email'),
                 'user_id' => auth()->id(),
             ]);
+            
+            $request->session()->regenerate();
+
+            // ALWAYS return JSON for AJAX requests (check X-Requested-With header)
+            if ($request->header('X-Requested-With') === 'XMLHttpRequest') {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Authentication successful',
+                    'redirect' => route('dashboard', absolute: false)
+                ]);
+            }
+            
         } catch (\Illuminate\Validation\ValidationException $e) {
             \Log::warning('Login failed - Invalid credentials', [
                 'email' => $request->input('email'),
                 'ip' => $request->ip(),
             ]);
+            
+            // CRITICAL FIX: Return JSON error for AJAX requests instead of throwing
+            if ($request->header('X-Requested-With') === 'XMLHttpRequest') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid credentials',
+                    'errors' => [
+                        'email' => ['These credentials do not match our records.']
+                    ]
+                ], 422); // 422 Unprocessable Entity
+            }
+            
+            // For non-AJAX, let Laravel handle it normally
             throw $e;
-        }
-
-        $request->session()->regenerate();
-
-        // If this is an AJAX request, return JSON instead of redirect
-        if ($request->wantsJson() || $request->ajax()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Authentication successful',
-                'redirect' => route('dashboard', absolute: false)
-            ]);
         }
 
         return redirect()->intended(route('dashboard', absolute: false));

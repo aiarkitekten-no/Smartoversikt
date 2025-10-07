@@ -485,7 +485,6 @@
                 // CRITICAL: Check response status FIRST before trying to parse JSON
                 if (response.status === 302) {
                     // Redirect response - this should NOT happen with AJAX
-                    // If we get here, something is wrong
                     console.error('Unexpected redirect response');
                     btn.disabled = false;
                     btnText.textContent = '⚡ INITIATE ACCESS ⚡';
@@ -505,8 +504,8 @@
                     return;
                 }
                 
-                // Check for successful authentication (HTTP 200 and no validation errors)
-                if (response.status === 200 && !data.errors) {
+                // Check for successful authentication (HTTP 200 and success flag)
+                if (response.status === 200 && data.success === true) {
                     // Success - Access Granted
                     playAccessGranted();
                     
@@ -517,6 +516,13 @@
                     setTimeout(() => {
                         window.location.href = '/dashboard';
                     }, 500);
+                } else if (response.status === 422 || data.success === false) {
+                    // 422 = Validation error (wrong credentials)
+                    // Trigger the EPIC self-destruct sequence!
+                    console.log('Authentication failed - initiating self-destruct!');
+                    btn.disabled = false;
+                    btnText.textContent = '⚡ INITIATE ACCESS ⚡';
+                    initiateSelfDestruct();
                 } else {
                     // Failed authentication - trigger SELF DESTRUCT
                     // This handles: 422 (validation error), 401 (unauthorized), etc.
