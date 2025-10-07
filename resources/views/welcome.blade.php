@@ -309,7 +309,51 @@
     <!-- Game Over Screen (90s style) -->
     <div id="gameover-overlay" class="fixed inset-0 z-[9999] hidden bg-black"
          style="background: linear-gradient(180deg, #000000 0%, #1a0000 50%, #000000 100%);">
-        <div class="absolute inset-0 scanlines-retro"></div>    <style>
+        <div class="absolute inset-0 scanlines-retro"></div>
+        
+        <div class="flex items-center justify-center h-full relative z-20">
+            <div class="text-center px-8">
+                <!-- MASSIVE GAME OVER TEXT -->
+                <div class="mb-12" style="animation: gameOverGlitch 2s infinite;">
+                    <div class="text-9xl font-black mb-4" 
+                         style="color: #ff0000; 
+                                text-shadow: 
+                                    0 0 10px #ff0000,
+                                    0 0 20px #ff0000,
+                                    0 0 40px #ff0000,
+                                    0 0 80px #ff0000,
+                                    5px 5px 0 #000000,
+                                    -5px -5px 0 #8b0000;
+                                letter-spacing: 0.2em;
+                                font-family: 'Orbitron', 'Courier New', monospace;
+                                line-height: 1;">
+                        GAME OVER
+                    </div>
+                </div>
+                
+                <!-- Retro Score Display -->
+                <div class="mb-8 font-mono text-2xl" style="color: #00ffff; text-shadow: 0 0 10px #00ffff;">
+                    <div class="mb-2">YOUR SCORE</div>
+                    <div class="text-6xl font-black" style="color: #ffff00; text-shadow: 0 0 20px #ffff00;">
+                        000000
+                    </div>
+                </div>
+                
+                <!-- INSERT COIN message -->
+                <div class="mt-12 text-3xl font-bold blink-slow" 
+                     style="color: #ffffff; text-shadow: 0 0 10px #ffffff;">
+                    INSERT COIN TO CONTINUE
+                </div>
+                
+                <!-- High Score -->
+                <div class="mt-8 text-sm font-mono" style="color: #ff00ff; opacity: 0.7;">
+                    HIGH SCORE: 999999
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <style>
         /* Game Over glitch animation */
         @keyframes gameOverGlitch {
             0%, 90% { transform: translate(0); }
