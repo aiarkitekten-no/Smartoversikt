@@ -358,6 +358,8 @@
                 
                 if (response.ok && !data.errors) {
                     // Success - Access Granted
+                    playAccessGranted();
+                    
                     btnText.textContent = '✓ ACCESS GRANTED ✓';
                     btn.classList.remove('from-cyan-600', 'to-cyan-400');
                     btn.classList.add('from-green-600', 'to-green-400');
@@ -378,12 +380,129 @@
             }
         });
         
+        // Audio Context for sound effects
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
+        
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new AudioContext();
+            }
+            return audioCtx;
+        }
+        
+        // Sound effect: Alarm beep
+        function playAlarmBeep(frequency = 800, duration = 0.15) {
+            const ctx = initAudio();
+            const oscillator = ctx.createOscillator();
+            const gainNode = ctx.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(ctx.destination);
+            
+            oscillator.frequency.value = frequency;
+            oscillator.type = 'square';
+            
+            gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration);
+            
+            oscillator.start(ctx.currentTime);
+            oscillator.stop(ctx.currentTime + duration);
+        }
+        
+        // Sound effect: Countdown beep (getting higher pitched)
+        function playCountdownBeep(countNumber) {
+            const baseFreq = 600;
+            const freq = baseFreq + (5 - countNumber) * 100; // Higher pitch as count decreases
+            playAlarmBeep(freq, 0.2);
+        }
+        
+        // Sound effect: Explosion with electrical short circuit
+        function playExplosion() {
+            const ctx = initAudio();
+            
+            // Create white noise for explosion
+            const bufferSize = ctx.sampleRate * 2;
+            const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+            const output = noiseBuffer.getChannelData(0);
+            
+            for (let i = 0; i < bufferSize; i++) {
+                output[i] = Math.random() * 2 - 1;
+            }
+            
+            const noise = ctx.createBufferSource();
+            noise.buffer = noiseBuffer;
+            
+            const noiseGain = ctx.createGain();
+            const noiseFilter = ctx.createBiquadFilter();
+            noiseFilter.type = 'lowpass';
+            noiseFilter.frequency.value = 1000;
+            
+            noise.connect(noiseFilter);
+            noiseFilter.connect(noiseGain);
+            noiseGain.connect(ctx.destination);
+            
+            // Explosion envelope
+            noiseGain.gain.setValueAtTime(0.5, ctx.currentTime);
+            noiseGain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 1.5);
+            
+            noise.start(ctx.currentTime);
+            noise.stop(ctx.currentTime + 1.5);
+            
+            // Add electrical zapping sounds
+            for (let i = 0; i < 8; i++) {
+                setTimeout(() => {
+                    const zapFreq = 100 + Math.random() * 300;
+                    playAlarmBeep(zapFreq, 0.05 + Math.random() * 0.1);
+                }, i * 150 + Math.random() * 100);
+            }
+        }
+        
+        // Sound effect: Access Denied warning
+        function playAccessDenied() {
+            const ctx = initAudio();
+            
+            // Two-tone alarm
+            playAlarmBeep(800, 0.3);
+            setTimeout(() => playAlarmBeep(600, 0.3), 350);
+            setTimeout(() => playAlarmBeep(800, 0.3), 700);
+        }
+        
+        // Sound effect: Access Granted (success melody)
+        function playAccessGranted() {
+            const ctx = initAudio();
+            
+            // Success melody: ascending notes
+            const notes = [523.25, 659.25, 783.99]; // C5, E5, G5
+            notes.forEach((freq, i) => {
+                setTimeout(() => {
+                    const oscillator = ctx.createOscillator();
+                    const gainNode = ctx.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(ctx.destination);
+                    
+                    oscillator.frequency.value = freq;
+                    oscillator.type = 'sine';
+                    
+                    gainNode.gain.setValueAtTime(0.2, ctx.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+                    
+                    oscillator.start(ctx.currentTime);
+                    oscillator.stop(ctx.currentTime + 0.3);
+                }, i * 100);
+            });
+        }
+        
         // Self Destruct Sequence
         function initiateSelfDestruct() {
             const container = document.getElementById('login-container');
             const overlay = document.getElementById('destruct-overlay');
             const redFlash = document.getElementById('red-flash');
             const countdownEl = document.getElementById('countdown');
+            
+            // Play ACCESS DENIED alarm
+            playAccessDenied();
             
             // Shake the container
             container.classList.add('shake');
@@ -395,9 +514,18 @@
                 
                 // Countdown
                 let count = 5;
+                
+                // Play initial countdown beep
+                playCountdownBeep(count);
+                
                 const interval = setInterval(() => {
                     count--;
                     countdownEl.textContent = count;
+                    
+                    // Play countdown beep
+                    if (count > 0) {
+                        playCountdownBeep(count);
+                    }
                     
                     // Flash screen
                     redFlash.style.opacity = '0.8';
@@ -408,7 +536,9 @@
                     if (count === 0) {
                         clearInterval(interval);
                         
-                        // EXPLODE
+                        // EXPLODE with sound
+                        playExplosion();
+                        
                         document.body.classList.add('explode');
                         redFlash.style.opacity = '1';
                         
