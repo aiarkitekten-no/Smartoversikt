@@ -1,0 +1,33 @@
+{
+  "meta": {
+    "beskrivelse": "Kjente risiki og mitigering (valgfritt)",
+    "opprettet": "2025-10-06T00:00:00Z",
+    "sist_oppdatert": "2025-10-06T00:00:00Z"
+  },
+  "risiki": [
+    {
+      "id": "R001",
+      "beskrivelse": "Destruktive OS-kommandoer",
+      "sannsynlighet": "medium",
+      "konsekvens": "kritisk",
+      "mitigering": "Read-only wrapper med whitelist, ingen shell_exec uten validering",
+      "status": "under_implementering"
+    },
+    {
+      "id": "R002",
+      "beskrivelse": "API rate-limits",
+      "sannsynlighet": "høy",
+      "konsekvens": "medium",
+      "mitigering": "Caching av snapshots, respektere rate-limit headers, fallback til siste gyldige data",
+      "status": "planlagt"
+    },
+    {
+      "id": "R003",
+      "beskrivelse": "Hemmeligheter i kode",
+      "sannsynlighet": "medium",
+      "konsekvens": "kritisk",
+      "mitigering": ".env for alle nøkler, .gitignore, masker i logger",
+      "status": "under_implementering"
+    }
+  ]
+}

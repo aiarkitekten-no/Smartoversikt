@@ -1,0 +1,16 @@
+{
+  "meta": {
+    "beskrivelse": "Hypoteser som ikke er bevist ennå - trenger avklaring",
+    "opprettet": "2025-10-06T00:00:00Z",
+    "sist_oppdatert": "2025-10-06T00:00:00Z"
+  },
+  "usikkert": [
+    {
+      "timestamp": "2025-10-06T10:24:22+02:00",
+      "fase": "1.2",
+      "spørsmål": "ADMIN_PASSWORD må settes i .env før seeding",
+      "årsak": "Kan ikke opprette admin bruker uten passord",
+      "foreslått_handling": "Sett ADMIN_PASSWORD i .env manuelt, deretter kjør: php artisan db:seed"
+    }
+  ]
+}

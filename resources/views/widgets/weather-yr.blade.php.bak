@@ -1,0 +1,33 @@
+<div class="p-2">
+    @if(isset($data['error']))
+        <div class="text-center text-gray-500">
+            <p class="text-xs">{{ $data['error'] }}</p>
+        </div>
+    @else
+        <div class="text-center mb-0.5">
+            <h3 class="text-base font-semibold text-gray-800">{{ $data['location'] ?? 'Oslo' }}</h3>
+            <p class="text-lg font-bold text-blue-600 my-2">{{ $data['temperature'] ?? 0 }}°</p>
+            <p class="text-xs text-gray-600">{{ $data['condition_text'] ?? 'Ukjent' }}</p>
+            <p class="text-xs text-gray-500">Føles som {{ $data['feels_like'] ?? 0 }}°</p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-1 text-xs">
+            <div class="flex items-center">
+                <span class="text-gray-600 mr-2">💧</span>
+                <span>{{ $data['humidity'] ?? 0 }}%</span>
+            </div>
+            <div class="flex items-center">
+                <span class="text-gray-600 mr-2">💨</span>
+                <span>{{ $data['wind_speed'] ?? 0 }} m/s {{ $data['wind_direction'] ?? '' }}</span>
+            </div>
+            @if(($data['precipitation'] ?? 0) > 0)
+                <div class="flex items-center col-span-2">
+                    <span class="text-gray-600 mr-2">🌧️</span>
+                    <span>{{ $data['precipitation'] }} mm neste time</span>
+                </div>
+            @endif
+        </div>
+
+        <p class="text-xs text-gray-400 mt-0.5 text-center">Data fra Yr.no / MET</p>
+    @endif
+</div>

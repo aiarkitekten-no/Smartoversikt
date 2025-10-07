@@ -1,0 +1,107 @@
+{
+  "meta": {
+    "beskrivelse": "Register over funksjoner med hash, avhengigheter og følgefeil",
+    "opprettet": "2025-10-06T00:00:00Z",
+    "sist_oppdatert": "2025-10-06T11:15:00+02:00"
+  },
+  "funksjoner": {
+    "support.sys.readonly": {
+      "hash": "a3f9c2e1b5d8",
+      "beskrivelse": "Sikker wrapper for read-only OS-kommandoer (whitelist-basert)",
+      "fil": "app/Support/Sys/ReadonlyCommand.php",
+      "snakker_med": [
+        "OS via proc_open",
+        "Laravel Log"
+      ],
+      "følgefeil_ved_endring": "Kan åpne for sikkerhetshull hvis whitelist/blacklist endres feil"
+    },
+    "database.seeders.adminuser": {
+      "hash": "7f4e2a9c8b1d",
+      "beskrivelse": "Oppretter admin bruker fra .env (ingen hardkodet passord)",
+      "fil": "database/seeders/AdminUserSeeder.php",
+      "snakker_med": [
+        "User model",
+        ".env variabler"
+      ],
+      "følgefeil_ved_endring": "Kan brekke admin-bruker opprettelse hvis .env format endres"
+    },
+    "services.widgets.base": {
+      "hash": "9d3b7f2e4c1a",
+      "beskrivelse": "Abstract base class for alle widget data-fetchere med snapshot caching",
+      "fil": "app/Services/Widgets/BaseWidgetFetcher.php",
+      "snakker_med": [
+        "WidgetSnapshot model",
+        "Widget model",
+        "Carbon",
+        "Laravel Log"
+      ],
+      "følgefeil_ved_endring": "Alle widgets stopper hvis snapshot-logikk feiler, critical"
+    },
+    "services.widgets.democlock": {
+      "hash": "4c8a1f6e9b2d",
+      "beskrivelse": "Demo clock widget som viser server-tid og system-info",
+      "fil": "app/Services/Widgets/DemoClockFetcher.php",
+      "snakker_med": [
+        "BaseWidgetFetcher",
+        "Carbon",
+        "Laravel app()"
+      ],
+      "følgefeil_ved_endring": "Kun demo-clock widget påvirkes, lav risiko"
+    },
+    "api.widgets.controller": {
+      "hash": "3e7c5a2f8d9b",
+      "beskrivelse": "API controller for widget-data endpoints med Sanctum auth",
+      "fil": "app/Http/Controllers/Api/WidgetController.php",
+      "snakker_med": [
+        "Widget model",
+        "BaseWidgetFetcher",
+        "config/widgets.php"
+      ],
+      "følgefeil_ved_endring": "Frontend kan ikke hente widget-data hvis API brekker"
+    },
+    "console.widgets.refresh": {
+      "hash": "6b9d4e1f7c2a",
+      "beskrivelse": "Artisan command for å refreshe widget snapshots (manuelt eller scheduled)",
+      "fil": "app/Console/Commands/RefreshWidgetsCommand.php",
+      "snakker_med": [
+        "Widget model",
+        "BaseWidgetFetcher",
+        "config/widgets.php"
+      ],
+      "følgefeil_ved_endring": "Scheduled refresh stopper, widgets blir ikke oppdatert automatisk"
+    },
+    "services.widgets.uptime": {
+      "hash": "5f8a2c9e7b4d",
+      "beskrivelse": "System uptime widget - leser /proc/uptime og /proc/loadavg via ReadonlyCommand",
+      "fil": "app/Services/Widgets/SystemUptimeFetcher.php",
+      "snakker_med": [
+        "BaseWidgetFetcher",
+        "ReadonlyCommand",
+        "Carbon"
+      ],
+      "følgefeil_ved_endring": "System uptime widget viser feil data eller feiler"
+    },
+    "services.widgets.cpuram": {
+      "hash": "3c6e1a8f4b9d",
+      "beskrivelse": "System CPU/RAM widget - leser /proc/meminfo og /proc/loadavg via ReadonlyCommand",
+      "fil": "app/Services/Widgets/SystemCpuRamFetcher.php",
+      "snakker_med": [
+        "BaseWidgetFetcher",
+        "ReadonlyCommand",
+        "Carbon"
+      ],
+      "følgefeil_ved_endring": "CPU/RAM widget viser feil data eller feiler"
+    },
+    "services.widgets.disk": {
+      "hash": "7d2b4f1e9c8a",
+      "beskrivelse": "System disk widget - kjører df -B1 og df -i via ReadonlyCommand",
+      "fil": "app/Services/Widgets/SystemDiskFetcher.php",
+      "snakker_med": [
+        "BaseWidgetFetcher",
+        "ReadonlyCommand",
+        "Carbon"
+      ],
+      "følgefeil_ved_endring": "Disk widget viser feil data eller feiler"
+    }
+  }
+}

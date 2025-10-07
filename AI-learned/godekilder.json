@@ -1,0 +1,34 @@
+{
+  "meta": {
+    "beskrivelse": "Presise nett-kilder brukt i utviklingen",
+    "opprettet": "2025-10-06T00:00:00Z",
+    "sist_oppdatert": "2025-10-06T00:00:00Z"
+  },
+  "kilder": [
+    {
+      "emne": "Laravel 11 Dokumentasjon",
+      "url": "https://laravel.com/docs/11.x",
+      "relevans": "Offisiell Laravel dokumentasjon"
+    },
+    {
+      "emne": "Plesk Dokumentasjon",
+      "url": "https://docs.plesk.com/en-US/obsidian/",
+      "relevans": "Plesk Obsidian API og konfigurasjon"
+    },
+    {
+      "emne": "Laravel Breeze Dokumentasjon",
+      "url": "https://laravel.com/docs/11.x/starter-kits#laravel-breeze",
+      "relevans": "For Fase 1 - innlogging og autentisering"
+    },
+    {
+      "emne": "Laravel Scheduler",
+      "url": "https://laravel.com/docs/11.x/scheduling",
+      "relevans": "For Fase 2 - widget scheduler og jobs"
+    },
+    {
+      "emne": "Plesk CLI Tools",
+      "url": "https://docs.plesk.com/en-US/obsidian/cli-linux/",
+      "relevans": "For Fase 3 - OS/Plesk widgets"
+    }
+  ]
+}
