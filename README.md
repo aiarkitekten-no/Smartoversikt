@@ -1,366 +1,729 @@
-# Laravel Widget Dashboard 🎯# Smartesider Live Dashboard# Smartesider Live Dashboard# Smartesider Live Dashboard# Smartesider Live Dashboard# Smartesider Live Dashboard<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 📊 Smartoversikt# Laravel Widget Dashboard 🎯# Smartesider Live Dashboard# Smartesider Live Dashboard# Smartesider Live Dashboard# Smartesider Live Dashboard# Smartesider Live Dashboard<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
 
 
-Et kraftig, modulært widget-system bygget med Laravel 11, Alpine.js og Tailwind CSS.
+> Smart business dashboard with 30+ customizable widgets for monitoring your entire business infrastructure
 
 
+
+[![Laravel](https://img.shields.io/badge/Laravel-10.x-FF2D20?style=flat&logo=laravel)](https://laravel.com)Et kraftig, modulært widget-system bygget med Laravel 11, Alpine.js og Tailwind CSS.
+
+[![Alpine.js](https://img.shields.io/badge/Alpine.js-3.x-8BC0D0?style=flat&logo=alpine.js)](https://alpinejs.dev)
+
+[![Vite](https://img.shields.io/badge/Vite-6.3-646CFF?style=flat&logo=vite)](https://vitejs.dev)
+
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.x-38B2AC?style=flat&logo=tailwind-css)](https://tailwindcss.com)
 
 ## ✨ FunksjonerEt komplett, live dashboard uten mock-data eller placeholders. Bygget med Laravel 11, Blade og Alpine.js.
 
+## ✨ Features
 
+
+
+### 🎯 30+ Widgets Across 8 Categories
 
 ### 🎯 Fase 0-3: Grunnmur
 
-- ✅ Laravel 11 med Breeze autentisering
+#### 🖥️ System Monitoring
 
-- ✅ Norsk brukergrensesnitt## 📋 ProsjektstatusEt komplett, live dashboard uten mock-data eller placeholders. Bygget med Laravel 11, Blade og Alpine.js.
+- **System Uptime** - Server uptime, load average- ✅ Laravel 11 med Breeze autentisering
 
-- ✅ Modulært widget-system med fetchers
+- **CPU & RAM** - Real-time usage monitoring
 
-- ✅ System-monitoring widgets (Oppetid, CPU/RAM, Disk)
+- **Disk Usage** - Storage space monitoring- ✅ Norsk brukergrensesnitt## 📋 ProsjektstatusEt komplett, live dashboard uten mock-data eller placeholders. Bygget med Laravel 11, Blade og Alpine.js.
 
-- ✅ Automatisk data-refresh med konfigurerbare intervaller
+- **Disk I/O** - Read/write performance
 
-- ✅ Snapshot-basert caching### ✅ Fase 0 - Guardrails & Struktur (FULLFØRT)
+- **Network** - Traffic statistics- ✅ Modulært widget-system med fetchers
+
+- **Cron Jobs** - Scheduled tasks overview
+
+- **Error Log** - Latest system errors- ✅ System-monitoring widgets (Oppetid, CPU/RAM, Disk)
 
 
+
+#### 📧 Mail Management- ✅ Automatisk data-refresh med konfigurerbare intervaller
+
+- **IMAP** - Inbox monitoring with unread counts
+
+- **SMTP** - Outgoing mail status- ✅ Snapshot-basert caching### ✅ Fase 0 - Guardrails & Struktur (FULLFØRT)
+
+- **Mail Queue** - Pending email jobs
+
+- **Failed Jobs** - Failed email tracking
+
+- **Mail Log** - Recent email activity
 
 ### 📊 Fase 4: Widget-administrasjon
 
-- ✅ Admin-panel for widget-håndtering
+#### 💼 Business Intelligence
 
-- ✅ Kategorisering av widgets**Mål**: Legg grunnmuren og bevis at vi jobber uten juks, mock eller placebo.## 📋 ProsjektstatusEt komplett, live dashboard uten mock-data eller placeholders. Bygget med Laravel 11, Blade og Alpine.js.
+- **Folio Accounting** - Real-time balance & transactions (GraphQL)- ✅ Admin-panel for widget-håndtering
 
-- ✅ Bulk-operasjoner (aktiver/deaktiver/refresh)
+- **Stripe Payments** - Revenue, customers, MRR tracking
 
-- ✅ Filtrering og søk
+- **Smartesider Analytics** - Traffic & revenue statistics- ✅ Kategorisering av widgets**Mål**: Legg grunnmuren og bevis at vi jobber uten juks, mock eller placebo.## 📋 ProsjektstatusEt komplett, live dashboard uten mock-data eller placeholders. Bygget med Laravel 11, Blade og Alpine.js.
 
-- ✅ Rekkefølge-administrasjon
+
+
+#### 📱 Communication- ✅ Bulk-operasjoner (aktiver/deaktiver/refresh)
+
+- **Send SMS** - Interactive SMS sending with SMStools API
+
+- **Phonero Telephony** - Click-to-dial & call history- ✅ Filtrering og søk
+
+  - Queue status monitoring
+
+  - Recent call log (answered/missed)- ✅ Rekkefølge-administrasjon
+
+  - One-click dialing
 
 #### Implementert:
 
-### 👤 Fase 5: Bruker-tilpassede dashboards
+#### 📊 Project Management
+
+- **Trello Tasks** - Card counts by list (Planlagt, Pågår, Ferdig, Bugs, Ønsker)### 👤 Fase 5: Bruker-tilpassede dashboards
+
+- **GitHub Activity** - Commits, repos, events tracking
 
 - ✅ Personlige widgets per bruker- ✅ Laravel 11 installert (PHP 8.3, Composer 2.8)
 
-- ✅ Legg til/fjern widgets
+#### 🔒 Security
 
-- ✅ Widget-picker modal- ✅ AI-learned/ struktur opprettet med alle JSON-filer### ✅ Fase 0 - Guardrails & Struktur (FULLFØRT)
+- **SSL Certificates** - Expiry monitoring- ✅ Legg til/fjern widgets
 
-- ✅ Individuelle innstillinger per widget
+- **Firewall Events** - Security event log with IP blocking
 
-- ✅ Vis/skjul funksjonalitet- ✅ Banned-ord sjekk implementert (`scripts/banned-words-check.sh`)
+- **Failed Login Attempts** - Brute force detection- ✅ Widget-picker modal- ✅ AI-learned/ struktur opprettet med alle JSON-filer### ✅ Fase 0 - Guardrails & Struktur (FULLFØRT)
 
 
 
-### 🎨 Fase 6: Avansert & Polish- ✅ Read-only wrapper for OS-kommandoer (`app/Support/Sys/ReadonlyCommand.php`)
+#### 🌤️ Weather & Energy- ✅ Individuelle innstillinger per widget
+
+- **Yr.no Weather** - Norwegian weather forecasts
+
+- **Power Prices** - Nordpool electricity pricing- ✅ Vis/skjul funksjonalitet- ✅ Banned-ord sjekk implementert (`scripts/banned-words-check.sh`)
+
+
+
+#### 📰 News & CRM
+
+- **RSS Feeds** - Customizable news sources
+
+- **Pipedrive CRM** - Deals & pipeline overview### 🎨 Fase 6: Avansert & Polish- ✅ Read-only wrapper for OS-kommandoer (`app/Support/Sys/ReadonlyCommand.php`)
+
+- **Support Tickets** - Customer support tracking
 
 - ✅ **Drag-and-drop** - Dra widgets for å endre rekkefølge
 
+## 🚀 Quick Start
+
 - ✅ **Widget-innstillingsmodal** - Endre refresh interval og settings- ✅ Sikkerhet konfigurert (CSRF, HTTPS, rate-limit, logging)
+
+### Prerequisites
 
 - ✅ **Forbedret feilhåndtering** - Retry-logikk og bedre feilmeldinger
 
-- ✅ **Live statusindikatorer** - Grønn/gul/rød status-dot- ✅ Unit-tester (4/4 passed)**Mål**: Legg grunnmuren og bevis at vi jobber uten juks, mock eller placebo.## 📋 ProsjektstatusEt komplett, live dashboard uten mock-data eller placeholders. Bygget med Laravel 11, Blade og Alpine.js.
+- PHP 8.1+
 
-- ✅ **Loading states** - Spinner og visuell feedback
+- Composer- ✅ **Live statusindikatorer** - Grønn/gul/rød status-dot- ✅ Unit-tester (4/4 passed)**Mål**: Legg grunnmuren og bevis at vi jobber uten juks, mock eller placebo.## 📋 ProsjektstatusEt komplett, live dashboard uten mock-data eller placeholders. Bygget med Laravel 11, Blade og Alpine.js.
 
-- ✅ **Responsivt design** - Fungerer på mobil, tablet og desktop
+- Node.js 18+
 
-
-
-## 🚀 Bruk**Rapport**: [AI-learned/FASE-0-RAPPORT.md](AI-learned/FASE-0-RAPPORT.md)
+- SQLite (or MySQL/PostgreSQL)- ✅ **Loading states** - Spinner og visuell feedback
 
 
 
-### Dashboard
+### Installation- ✅ **Responsivt design** - Fungerer på mobil, tablet og desktop
+
+
+
+```bash
+
+# Clone repository
+
+git clone https://github.com/aiarkitekten-no/Smartoversikt.git## 🚀 Bruk**Rapport**: [AI-learned/FASE-0-RAPPORT.md](AI-learned/FASE-0-RAPPORT.md)
+
+cd Smartoversikt
+
+
+
+# Install dependencies
+
+composer install### Dashboard
+
+npm install
 
 1. Logg inn på https://nytt.smartesider.no
 
-2. Se dine personlige widgets---#### Implementert:
+# Configure environment
 
-3. Klikk "⚙️" for å endre innstillinger
-
-4. Klikk "✕" for å fjerne widget
-
-5. Dra widgets (hold musepeker over "⋮⋮") for å endre rekkefølge
-
-6. Klikk "+ Legg til widget" for å legge til flere### ✅ Fase 1 - Innlogging (FULLFØRT)- ✅ Laravel 11 installert (PHP 8.3, Composer 2.8)
-
-
-
-### Admin
-
-1. Gå til /admin/widgets
-
-2. Se alle tilgjengelige widgets**Mål**: Implementer autentisering med Laravel Breeze og tilpass UX til norsk.- ✅ AI-learned/ struktur opprettet med alle JSON-filer### ✅ Fase 0 - Guardrails & Struktur (FULLFØRT)
-
-3. Filtrer på kategori eller status
-
-4. Aktiver/deaktiver widgets
-
-5. Kjør bulk-operasjoner
-
-#### Implementert:- ✅ Banned-ord sjekk implementert (`scripts/banned-words-check.sh`)
-
-## 📦 Tilgjengelige Widgets
-
-- ✅ Laravel Breeze installert (Blade stack)
-
-| Widget | Beskrivelse | Kategori | Refresh |
-
-|--------|-------------|----------|---------|- ✅ Login støtter både e-post OG brukernavn (automatisk deteksjon)- ✅ Read-only wrapper for OS-kommandoer (`app/Support/Sys/ReadonlyCommand.php`)- ✅ Laravel 11 installert (PHP 8.3)
-
-| system.uptime | Server oppetid og load average | System | 60s |
-
-| system.cpu-ram | CPU og RAM bruk | System | 30s |- ✅ "Husk meg" i 30 dager (konfigurerbart)
-
-| system.disk | Diskplass og I/O | System | 120s |
-
-| demo.clock | Live klokke | Demo | 10s |- ✅ AdminUserSeeder leser passord fra .env (ingen hardkodet data)- ✅ Sikkerhet konfigurert (CSRF, HTTPS, rate-limit, logging)
-
-
-
-## 🛠️ Teknisk Stack- ✅ Norsk UX med "Vis passord"-toggle (Alpine.js)
-
-
-
-- **Backend:** Laravel 11.46.1, PHP 8.3.26- ✅ Dashboard-banner viser login-status og expiry- ✅ Unit-tester (4/4 passed)- ✅ AI-learned/ struktur## 📋 ProsjektstatusEt komplett, live dashboard uten mock-data eller placeholders. Bygget med Laravel 11, Blade og Alpine.js.<p align="center">
-
-- **Database:** SQLite
-
-- **Frontend:** Alpine.js 3.x, Tailwind CSS 3.x
-
-- **Build:** Vite 6.3.6
-
-- **Server:** Plesk / Apache#### Manuelt steg:
-
-
-
-## 📝 Lage ny widget⏳ **VENTER**: Sett `ADMIN_PASSWORD` i `.env`, deretter kjør:
-
-
-
-Se [DEVELOPMENT.md](DEVELOPMENT.md) for detaljert guide.```bash**Rapport**: [AI-learned/FASE-0-RAPPORT.md](AI-learned/FASE-0-RAPPORT.md)- ✅ Banned-ord sjekk
-
-
-
-## 🔧 Artisan Kommandoerphp artisan db:seed --class=AdminUserSeeder
-
-
-
-```bash```
-
-# Refresh alle widgets
-
-php artisan widgets:refresh
-
-
-
-# Refresh spesifikk widget**Rapport**: Integrert i dette dokumentet---- ✅ ReadonlyCommand wrapper
-
-php artisan widgets:refresh --widget=system.uptime
-
-
-
-# Force refresh (ignorer cache)
-
-php artisan widgets:refresh --force---
-
-```
-
-
-
-## 🐛 Troubleshooting
-
-### ✅ Fase 2 - Widget-rammeverk (FULLFØRT)### ✅ Fase 1 - Innlogging (FULLFØRT)- ✅ Sikkerhet (CSRF, HTTPS, rate-limit)
-
-**Widget viser "HTTP 500":**
-
-- Sjekk at fetcher-klassen eksisterer
-
-- Se `storage/logs/laravel.log` for detaljer
-
-- Kjør `php artisan config:clear`**Mål**: Implementer widget-arkitektur fra database til frontend.
-
-
-
-**Drag-and-drop fungerer ikke:**
-
-- Sørg for at du holder musepeker over "⋮⋮" ikonet
-
-- Widgets må ha `draggable="true"` attributt#### Implementert:**Mål**: Implementer autentisering med Laravel Breeze og tilpass UX til norsk.### ✅ Fase 0 - Guardrails & Struktur (FULLFØRT)<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-
-
-
-**Data oppdateres ikke:**- ✅ Database-skjema (widgets, user_widgets, widget_snapshots)
-
-- Sjekk refresh interval i widget-innstillinger
-
-- Verifiser at widget er aktiv- ✅ Eloquent-modeller med relasjoner
-
-- Se browser console for JavaScript-feil
-
-- ✅ Widget-katalog i `config/widgets.php`
-
-## 📄 Lisens
-
-- ✅ WidgetCatalogSeeder (4 widgets definert)#### Implementert:### ✅ Fase 1 - Innlogging (FULLFØRT)
-
-MIT License
-
-- ✅ BaseWidgetFetcher (abstract class med snapshot-caching)
-
----
-
-- ✅ DemoClockFetcher (fungerende demo-widget)- ✅ Laravel Breeze installert (Blade stack)
-
-**Status:** ✅ Fase 0-6 fullført  
-
-**Versjon:** 1.0.0  - ✅ Widget API-controller med Sanctum-auth
-
-**Utviklet av:** Terje @ Smartesider.no
-
-- ✅ API-routes (`/api/widgets`, `/api/widgets/{key}`, refresh)- ✅ Login støtter både e-post OG brukernavn (automatisk deteksjon)- ✅ Laravel Breeze (Blade)
-
-- ✅ Alpine.js frontend-komponent (`widgetData()`)
-
-- ✅ Blade-partial for demo-clock widget- ✅ "Husk meg" i 30 dager (konfigurerbart)
-
-- ✅ RefreshWidgetsCommand (artisan + scheduler)
-
-- ✅ Scheduled tasks konfigurert (kjører hvert minutt)- ✅ AdminUserSeeder leser passord fra .env (ingen hardkodet data)- ✅ Login: e-post ELLER brukernavn
-
-
-
-**Rapport**: [AI-learned/FASE-2-RAPPORT.md](AI-learned/FASE-2-RAPPORT.md)- ✅ Norsk UX med "Vis passord"-toggle (Alpine.js)
-
-
-
----- ✅ Dashboard-banner viser login-status og expiry- ✅ "Husk meg" i 30 dager**Mål**: Legg grunnmuren og bevis at vi jobber uten juks, mock eller placebo.## 📋 Prosjektstatus<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-
-
-
-### ✅ Fase 3 - System Widgets (FULLFØRT)
-
-
-
-**Mål**: Implementer system-monitoring widgets med ReadonlyCommand.#### Manuelt steg:- ✅ AdminUserSeeder (fra .env)
-
-
-
-#### Implementert:⏳ **VENTER**: Sett `ADMIN_PASSWORD` i `.env`, deretter kjør:
-
-- ✅ **SystemUptimeFetcher** – Server uptime og load average
-
-  - Leser `/proc/uptime` og `/proc/loadavg````bash- ✅ Norsk UX + "Vis passord"
-
-  - Viser boot time og uptime formatert (15 dager, 55 minutter)
-
-  - Load average 1m/5m/15mphp artisan db:seed --class=AdminUserSeeder
-
-  - Refresh: 60 sekunder
-
-  ```- ⏳ **VENTER**: ADMIN_PASSWORD i .env
-
-- ✅ **SystemCpuRamFetcher** – Memory og CPU monitoring
-
-  - Leser `/proc/meminfo` og `/proc/loadavg`
-
-  - Memory usage: 14.95 GB / 125.65 GB (11.9%)
-
-  - Swap usage tracking**Rapport**: Integrert i dette dokumentet#### Implementert:<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-
-  - Running/total processes
-
-  - Visuell progress bar med fargekoding
-
-  - Refresh: 30 sekunder
-
-  ---### 🔄 Fase 2 - Widget-rammeverk (NESTE)
-
-- ✅ **SystemDiskFetcher** – Diskplass monitoring
-
-  - Kjører `df -B1` og `df -i` via ReadonlyCommand
-
-  - Filesystem usage per mount point
-
-  - Inode usage (avansert, ekspanderbar)### ✅ Fase 2 - Widget-rammeverk (FULLFØRT)- DB-skjema for widgets- ✅ Laravel 11 installert (PHP 8.3, Composer 2.8)
-
-  - Filtrerer pseudo-filesystems
-
-  - Refresh: 120 sekunder
-
-
-
-- ✅ Dashboard oppdatert med alle 4 widgets (3 system + 1 demo)**Mål**: Implementer widget-arkitektur fra database til frontend.- Komponentmønster
-
-- ✅ Responsive grid layout (1/2/3 kolonner)
-
-- ✅ Frontend Blade components med Alpine.js
-
-- ✅ Auto-refresh per widget type
-
-#### Implementert:- Scheduler- ✅ AI-learned/ struktur opprettet med alle JSON-filer### ✅ Fase 0 - Guardrails & Struktur (FULLFØRT)<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-
-#### Test:
-
-```bash- ✅ Database-skjema (widgets, user_widgets, widget_snapshots)
-
-php artisan widgets:refresh --force
-
-# Summary: 4 refreshed, 0 skipped, 0 failed- ✅ Eloquent-modeller med relasjoner
-
-```
-
-- ✅ Widget-katalog i `config/widgets.php`
-
-**Rapport**: [AI-learned/FASE-3-RAPPORT.md](AI-learned/FASE-3-RAPPORT.md)
-
-- ✅ WidgetCatalogSeeder (4 widgets definert)## 🚀 Rask Start- ✅ Banned-ord sjekk implementert (`scripts/banned-words-check.sh`)
-
----
-
-- ✅ BaseWidgetFetcher (abstract class med snapshot-caching)
-
-### 🔄 Fase 4+ - Kommende faser
-
-- ✅ DemoClockFetcher (fungerende demo-widget)
-
-- **Fase 4**: Mail & Queue widgets (postqueue, failed jobs, mail log)
-
-- **Fase 5**: Eksterne API widgets (Yr.no vær, Smartesider.no stats)- ✅ Widget API-controller med Sanctum-auth
-
-- **Fase 6**: Dashboard-layout customization (drag-and-drop)
-
-- **Fase 7**: Admin-panel for widget-konfigurasjon- ✅ API-routes (`/api/widgets`, `/api/widgets/{key}`, refresh)### 1. Sett opp .env- ✅ Read-only wrapper for OS-kommandoer (`app/Support/Sys/ReadonlyCommand.php`)</p>
-
-- **Fase 8**: Produksjons-deployment og optimering
-
-- ✅ Alpine.js frontend-komponent (`widgetData()`)
-
----
-
-- ✅ Blade-partial for demo-clock widget```bash
-
-## 🚀 Rask Start
-
-- ✅ RefreshWidgetsCommand (artisan + scheduler)
-
-### 1. Sett opp .env
-
-```bash- ✅ Scheduled tasks konfigurert (kjører hvert minutt)# Kopier og rediger- ✅ Dashboard config opprettet (`config/dashboard.php`)
-
-cp .env.example .env
+cp .env.example .env2. Se dine personlige widgets---#### Implementert:
 
 php artisan key:generate
 
+3. Klikk "⚙️" for å endre innstillinger
+
+# Setup database
+
+touch database/database.sqlite4. Klikk "✕" for å fjerne widget
+
+php artisan migrate
+
+php artisan db:seed --class=AdminUserSeeder5. Dra widgets (hold musepeker over "⋮⋮") for å endre rekkefølge
+
+php artisan db:seed --class=WidgetCatalogSeeder
+
+6. Klikk "+ Legg til widget" for å legge til flere### ✅ Fase 1 - Innlogging (FULLFØRT)- ✅ Laravel 11 installert (PHP 8.3, Composer 2.8)
+
+# Build assets
+
+npm run build
 
 
-# Legg til admin-passord (for Fase 1)#### Test widget-refresh:cp .env.example .env
 
-echo "ADMIN_PASSWORD=DittSikre\$Passord123" >> .env
+# Start development server### Admin
+
+php artisan serve
+
+```1. Gå til /admin/widgets
+
+
+
+### First Login2. Se alle tilgjengelige widgets**Mål**: Implementer autentisering med Laravel Breeze og tilpass UX til norsk.- ✅ AI-learned/ struktur opprettet med alle JSON-filer### ✅ Fase 0 - Guardrails & Struktur (FULLFØRT)
+
+
+
+Default credentials:3. Filtrer på kategori eller status
+
+- Email: `admin@example.com`
+
+- Password: `password`4. Aktiver/deaktiver widgets
+
+
+
+**⚠️ Change these immediately in production!**5. Kjør bulk-operasjoner
+
+
+
+## 🔧 Configuration#### Implementert:- ✅ Banned-ord sjekk implementert (`scripts/banned-words-check.sh`)
+
+
+
+### Widget API Keys## 📦 Tilgjengelige Widgets
+
+
+
+Configure API integrations in `.env`:- ✅ Laravel Breeze installert (Blade stack)
+
+
+
+```env| Widget | Beskrivelse | Kategori | Refresh |
+
+# Folio Accounting
+
+FOLIO_COOKIE=your_session_cookie|--------|-------------|----------|---------|- ✅ Login støtter både e-post OG brukernavn (automatisk deteksjon)- ✅ Read-only wrapper for OS-kommandoer (`app/Support/Sys/ReadonlyCommand.php`)- ✅ Laravel 11 installert (PHP 8.3)
+
+FOLIO_ORG=your_org_number
+
+| system.uptime | Server oppetid og load average | System | 60s |
+
+# Trello
+
+TRELLO_API_KEY=your_api_key| system.cpu-ram | CPU og RAM bruk | System | 30s |- ✅ "Husk meg" i 30 dager (konfigurerbart)
+
+TRELLO_API_TOKEN=your_token
+
+TRELLO_BOARD_ID=your_board_id| system.disk | Diskplass og I/O | System | 120s |
+
+
+
+# GitHub| demo.clock | Live klokke | Demo | 10s |- ✅ AdminUserSeeder leser passord fra .env (ingen hardkodet data)- ✅ Sikkerhet konfigurert (CSRF, HTTPS, rate-limit, logging)
+
+GITHUB_TOKEN=your_personal_access_token
+
+GITHUB_USERNAME=your_username
+
+
+
+# SMStools## 🛠️ Teknisk Stack- ✅ Norsk UX med "Vis passord"-toggle (Alpine.js)
+
+SMSTOOLS_CLIENT_ID=your_client_id
+
+SMSTOOLS_CLIENT_SECRET=your_client_secret
+
+SMS_SENDER=YourName
+
+- **Backend:** Laravel 11.46.1, PHP 8.3.26- ✅ Dashboard-banner viser login-status og expiry- ✅ Unit-tester (4/4 passed)- ✅ AI-learned/ struktur## 📋 ProsjektstatusEt komplett, live dashboard uten mock-data eller placeholders. Bygget med Laravel 11, Blade og Alpine.js.<p align="center">
+
+# Phonero Telephony
+
+PHONERO_API_URL=https://bedriftsnett-api.phonero.net- **Database:** SQLite
+
+PHONERO_USERNAME=your_username
+
+PHONERO_PASSWORD=your_password- **Frontend:** Alpine.js 3.x, Tailwind CSS 3.x
+
+PHONERO_CUSTOMER_ID=your_customer_id
+
+PHONERO_DEFAULT_AGENT=agent_number- **Build:** Vite 6.3.6
+
+PHONERO_DEFAULT_CLI=caller_id_number
+
+- **Server:** Plesk / Apache#### Manuelt steg:
+
+# Stripe
+
+STRIPE_SECRET=your_stripe_secret_key
+
+
+
+# Weather## 📝 Lage ny widget⏳ **VENTER**: Sett `ADMIN_PASSWORD` i `.env`, deretter kjør:
+
+YR_LOCATION_NAME=Oslo
+
+YR_LATITUDE=59.9139
+
+YR_LONGITUDE=10.7522
+
+```Se [DEVELOPMENT.md](DEVELOPMENT.md) for detaljert guide.```bash**Rapport**: [AI-learned/FASE-0-RAPPORT.md](AI-learned/FASE-0-RAPPORT.md)- ✅ Banned-ord sjekk
+
+
+
+### Widget Refresh
+
+
+
+Widgets auto-refresh based on their configured intervals. Manual refresh:## 🔧 Artisan Kommandoerphp artisan db:seed --class=AdminUserSeeder
+
+
+
+```bash
+
+# Refresh all widgets
+
+php artisan widgets:refresh```bash```
+
+
+
+# Refresh specific widget# Refresh alle widgets
+
+php artisan widgets:refresh system.cpu-ram
+
+php artisan widgets:refresh
+
+# Force refresh (ignore cache)
+
+php artisan widgets:refresh --force
+
+```
+
+# Refresh spesifikk widget**Rapport**: Integrert i dette dokumentet---- ✅ ReadonlyCommand wrapper
+
+### Scheduled Tasks
+
+php artisan widgets:refresh --widget=system.uptime
+
+Add to crontab for automatic widget updates:
+
+
+
+```cron
+
+* * * * * cd /path/to/smartoversikt && php artisan schedule:run >> /dev/null 2>&1# Force refresh (ignorer cache)
+
+```
+
+php artisan widgets:refresh --force---
+
+## 🎨 Customization
+
+```
+
+### Adding Widgets to Dashboard
+
+
+
+1. Navigate to **Settings** → **Widget Library**
+
+2. Click **+ Add Widget** on desired widget## 🐛 Troubleshooting
+
+3. Drag & drop to reorder
+
+4. Adjust size (1-4 columns wide)### ✅ Fase 2 - Widget-rammeverk (FULLFØRT)### ✅ Fase 1 - Innlogging (FULLFØRT)- ✅ Sikkerhet (CSRF, HTTPS, rate-limit)
+
+
+
+### Creating Custom Widgets**Widget viser "HTTP 500":**
+
+
+
+1. Create fetcher class:- Sjekk at fetcher-klassen eksisterer
+
+
+
+```php- Se `storage/logs/laravel.log` for detaljer
+
+// app/Services/Widgets/CustomWidgetFetcher.php
+
+class CustomWidgetFetcher extends BaseWidgetFetcher- Kjør `php artisan config:clear`**Mål**: Implementer widget-arkitektur fra database til frontend.
+
+{
+
+    protected string $widgetKey = 'custom.widget';
+
+    protected int $refreshIntervalSeconds = 300;
+
+    **Drag-and-drop fungerer ikke:**
+
+    protected function fetchData(): array
+
+    {- Sørg for at du holder musepeker over "⋮⋮" ikonet
+
+        return [
+
+            'timestamp' => now()->toIso8601String(),- Widgets må ha `draggable="true"` attributt#### Implementert:**Mål**: Implementer autentisering med Laravel Breeze og tilpass UX til norsk.### ✅ Fase 0 - Guardrails & Struktur (FULLFØRT)<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
+
+            'data' => 'your data here',
+
+        ];
+
+    }
+
+}**Data oppdateres ikke:**- ✅ Database-skjema (widgets, user_widgets, widget_snapshots)
+
+```
+
+- Sjekk refresh interval i widget-innstillinger
+
+2. Create Blade view:
+
+- Verifiser at widget er aktiv- ✅ Eloquent-modeller med relasjoner
+
+```blade
+
+<!-- resources/views/widgets/custom-widget.blade.php -->- Se browser console for JavaScript-feil
+
+<div class="widget-card" x-data="widgetData('custom.widget')" x-init="init()">
+
+    <h3 class="text-lg font-semibold">Custom Widget</h3>- ✅ Widget-katalog i `config/widgets.php`
+
+    <div x-text="data.data"></div>
+
+</div>## 📄 Lisens
+
+```
+
+- ✅ WidgetCatalogSeeder (4 widgets definert)#### Implementert:### ✅ Fase 1 - Innlogging (FULLFØRT)
+
+3. Register in `config/widgets.php`:
+
+MIT License
+
+```php
+
+'custom.widget' => [- ✅ BaseWidgetFetcher (abstract class med snapshot-caching)
+
+    'name' => 'Custom Widget',
+
+    'description' => 'Your custom widget',---
+
+    'category' => 'custom',
+
+    'refresh_interval' => 300,- ✅ DemoClockFetcher (fungerende demo-widget)- ✅ Laravel Breeze installert (Blade stack)
+
+    'fetcher' => \App\Services\Widgets\CustomWidgetFetcher::class,
+
+],**Status:** ✅ Fase 0-6 fullført  
+
+```
+
+**Versjon:** 1.0.0  - ✅ Widget API-controller med Sanctum-auth
+
+4. Seed database:
+
+**Utviklet av:** Terje @ Smartesider.no
+
+```bash
+
+php artisan db:seed --class=WidgetCatalogSeeder- ✅ API-routes (`/api/widgets`, `/api/widgets/{key}`, refresh)- ✅ Login støtter både e-post OG brukernavn (automatisk deteksjon)- ✅ Laravel Breeze (Blade)
+
+```
+
+- ✅ Alpine.js frontend-komponent (`widgetData()`)
+
+## 📱 Interactive Widgets
+
+- ✅ Blade-partial for demo-clock widget- ✅ "Husk meg" i 30 dager (konfigurerbart)
+
+### SMS Widget
+
+- ✅ RefreshWidgetsCommand (artisan + scheduler)
+
+Send SMS directly from dashboard:
+
+- Enter phone number (Norwegian format: 8 digits or +47 prefix)- ✅ Scheduled tasks konfigurert (kjører hvert minutt)- ✅ AdminUserSeeder leser passord fra .env (ingen hardkodet data)- ✅ Login: e-post ELLER brukernavn
+
+- Type message (max 160 chars)
+
+- Click **Send**
+
+- See sent counter in footer
+
+**Rapport**: [AI-learned/FASE-2-RAPPORT.md](AI-learned/FASE-2-RAPPORT.md)- ✅ Norsk UX med "Vis passord"-toggle (Alpine.js)
+
+### Phonero Telephony Widget
+
+
+
+Click-to-dial functionality:
+
+- Enter phone number---- ✅ Dashboard-banner viser login-status og expiry- ✅ "Husk meg" i 30 dager**Mål**: Legg grunnmuren og bevis at vi jobber uten juks, mock eller placebo.## 📋 Prosjektstatus<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
+
+- Click **📞 RING** to initiate call
+
+- View call status (Ringer/Samtale pågår)
+
+- See recent call history (✅ answered, ❌ missed)
+
+- Monitor queue status & wait times### ✅ Fase 3 - System Widgets (FULLFØRT)
+
+
+
+## 🏗️ Architecture
+
+
+
+### Tech Stack**Mål**: Implementer system-monitoring widgets med ReadonlyCommand.#### Manuelt steg:- ✅ AdminUserSeeder (fra .env)
+
+
+
+- **Backend**: Laravel 10.x
+
+- **Frontend**: Alpine.js 3.x + Blade templates
+
+- **Build Tool**: Vite 6.3.6#### Implementert:⏳ **VENTER**: Sett `ADMIN_PASSWORD` i `.env`, deretter kjør:
+
+- **CSS Framework**: Tailwind CSS 3.x
+
+- **Database**: SQLite (MySQL/PostgreSQL supported)- ✅ **SystemUptimeFetcher** – Server uptime og load average
+
+- **HTTP Client**: Guzzle for API integrations
+
+  - Leser `/proc/uptime` og `/proc/loadavg````bash- ✅ Norsk UX + "Vis passord"
+
+### Widget System
+
+  - Viser boot time og uptime formatert (15 dager, 55 minutter)
+
+1. **Fetcher** - Retrieves data from external APIs or system
+
+2. **Snapshot** - Caches data with configurable TTL  - Load average 1m/5m/15mphp artisan db:seed --class=AdminUserSeeder
+
+3. **API Endpoint** - Serves data to frontend via JSON
+
+4. **Blade View** - Renders widget UI  - Refresh: 60 sekunder
+
+5. **Alpine.js** - Reactive data binding & interactions
+
+  ```- ⏳ **VENTER**: ADMIN_PASSWORD i .env
+
+### Data Flow
+
+- ✅ **SystemCpuRamFetcher** – Memory og CPU monitoring
+
+```
+
+External API → Fetcher → WidgetSnapshot (DB) → API Controller → Blade View → Alpine.js  - Leser `/proc/meminfo` og `/proc/loadavg`
+
+```
+
+  - Memory usage: 14.95 GB / 125.65 GB (11.9%)
+
+Widgets refresh automatically based on TTL. Frontend polls `/api/widgets/{key}` endpoint.
+
+  - Swap usage tracking**Rapport**: Integrert i dette dokumentet#### Implementert:<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
+
+## 🔐 Security Features
+
+  - Running/total processes
+
+- **IP Blocking** - Automated firewall integration
+
+- **Failed Login Tracking** - Brute force detection  - Visuell progress bar med fargekoding
+
+- **SSL Monitoring** - Certificate expiry alerts
+
+- **CSRF Protection** - Laravel's built-in protection  - Refresh: 30 sekunder
+
+- **XSS Prevention** - Blade template escaping
+
+- **Secret Scanning** - GitHub push protection enabled  ---### 🔄 Fase 2 - Widget-rammeverk (NESTE)
+
+
+
+## 📊 API Integrations- ✅ **SystemDiskFetcher** – Diskplass monitoring
+
+
+
+### Supported Services  - Kjører `df -B1` og `df -i` via ReadonlyCommand
+
+
+
+| Service | Purpose | Auth Method |  - Filesystem usage per mount point
+
+|---------|---------|-------------|
+
+| Folio | Accounting data | Cookie session |  - Inode usage (avansert, ekspanderbar)### ✅ Fase 2 - Widget-rammeverk (FULLFØRT)- DB-skjema for widgets- ✅ Laravel 11 installert (PHP 8.3, Composer 2.8)
+
+| Trello | Project management | API key + token |
+
+| GitHub | Developer activity | Personal access token |  - Filtrerer pseudo-filesystems
+
+| SMStools | SMS sending | Client ID/Secret |
+
+| Phonero | Telephony | Username/Password → SessionID |  - Refresh: 120 sekunder
+
+| Stripe | Payment tracking | Secret key |
+
+| Yr.no | Weather forecasts | Public API |
+
+| Nordpool | Power prices | Public API |
+
+- ✅ Dashboard oppdatert med alle 4 widgets (3 system + 1 demo)**Mål**: Implementer widget-arkitektur fra database til frontend.- Komponentmønster
+
+### Rate Limiting
+
+- ✅ Responsive grid layout (1/2/3 kolonner)
+
+Widget refresh intervals prevent API rate limit issues:
+
+- System widgets: 10-30 seconds- ✅ Frontend Blade components med Alpine.js
+
+- External APIs: 60-300 seconds
+
+- Manual refresh: Always allowed- ✅ Auto-refresh per widget type
+
+
+
+## 🐛 Troubleshooting#### Implementert:- Scheduler- ✅ AI-learned/ struktur opprettet med alle JSON-filer### ✅ Fase 0 - Guardrails & Struktur (FULLFØRT)<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
+
+
+
+### Widget Not Updating#### Test:
+
+
+
+```bash```bash- ✅ Database-skjema (widgets, user_widgets, widget_snapshots)
+
+# Check snapshot status
+
+php artisan widgets:refresh widget.key --forcephp artisan widgets:refresh --force
+
+
+
+# View logs# Summary: 4 refreshed, 0 skipped, 0 failed- ✅ Eloquent-modeller med relasjoner
+
+tail -f storage/logs/laravel.log
+
+``````
+
+
+
+### Authentication Errors- ✅ Widget-katalog i `config/widgets.php`
+
+
+
+```bash**Rapport**: [AI-learned/FASE-3-RAPPORT.md](AI-learned/FASE-3-RAPPORT.md)
+
+# Clear config cache
+
+php artisan config:clear- ✅ WidgetCatalogSeeder (4 widgets definert)## 🚀 Rask Start- ✅ Banned-ord sjekk implementert (`scripts/banned-words-check.sh`)
+
+
+
+# Verify .env credentials---
+
+cat .env | grep API_KEY
+
+```- ✅ BaseWidgetFetcher (abstract class med snapshot-caching)
+
+
+
+### Frontend Not Compiling### 🔄 Fase 4+ - Kommende faser
+
+
+
+```bash- ✅ DemoClockFetcher (fungerende demo-widget)
+
+# Clear cache
+
+npm run build- **Fase 4**: Mail & Queue widgets (postqueue, failed jobs, mail log)
+
+php artisan view:clear
+
+- **Fase 5**: Eksterne API widgets (Yr.no vær, Smartesider.no stats)- ✅ Widget API-controller med Sanctum-auth
+
+# Check Vite manifest
+
+ls -la public/build/- **Fase 6**: Dashboard-layout customization (drag-and-drop)
+
+```
+
+- **Fase 7**: Admin-panel for widget-konfigurasjon- ✅ API-routes (`/api/widgets`, `/api/widgets/{key}`, refresh)### 1. Sett opp .env- ✅ Read-only wrapper for OS-kommandoer (`app/Support/Sys/ReadonlyCommand.php`)</p>
+
+## 🤝 Contributing
+
+- **Fase 8**: Produksjons-deployment og optimering
+
+Contributions welcome! Please:
+
+- ✅ Alpine.js frontend-komponent (`widgetData()`)
+
+1. Fork the repository
+
+2. Create feature branch (`git checkout -b feature/amazing-widget`)---
+
+3. Commit changes (`git commit -m 'Add amazing widget'`)
+
+4. Push to branch (`git push origin feature/amazing-widget`)- ✅ Blade-partial for demo-clock widget```bash
+
+5. Open Pull Request
+
+## 🚀 Rask Start
+
+## 📄 License
+
+- ✅ RefreshWidgetsCommand (artisan + scheduler)
+
+This project is open-sourced software licensed under the [MIT license](LICENSE).
+
+### 1. Sett opp .env
+
+## 🙏 Acknowledgments
+
+```bash- ✅ Scheduled tasks konfigurert (kjører hvert minutt)# Kopier og rediger- ✅ Dashboard config opprettet (`config/dashboard.php`)
+
+- Laravel Framework
+
+- Alpine.jscp .env.example .env
+
+- Tailwind CSS
+
+- All API providers (Folio, Trello, GitHub, etc.)php artisan key:generate
+
+
+
+---
+
+
+
+**Built with ❤️ by [AI Arkitekten](https://aiarkitekten.no)**# Legg til admin-passord (for Fase 1)#### Test widget-refresh:cp .env.example .env
+
+
+
+**Repository**: [github.com/aiarkitekten-no/Smartoversikt](https://github.com/aiarkitekten-no/Smartoversikt)echo "ADMIN_PASSWORD=DittSikre\$Passord123" >> .env
+
 
 ``````bash
 
