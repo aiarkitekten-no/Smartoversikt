@@ -27,6 +27,14 @@
             opacity: 0.15;
         }
         
+        /* Logout button */
+        .logout-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+        }
+        
         /* Scan line effect */
         @keyframes scan {
             0% { transform: translateY(-100%); }
@@ -159,6 +167,18 @@
     
     <!-- Scanline -->
     <div class="scanline"></div>
+    
+    <!-- Logout button (if already logged in) -->
+    @auth
+        <div class="logout-btn">
+            <form method="POST" action="{{ route('logout') }}" class="inline">
+                @csrf
+                <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-mono text-xs">
+                    🔓 LOGOUT
+                </button>
+            </form>
+        </div>
+    @endauth
     
     <!-- Particles -->
     <div class="fixed inset-0 z-2 pointer-events-none">

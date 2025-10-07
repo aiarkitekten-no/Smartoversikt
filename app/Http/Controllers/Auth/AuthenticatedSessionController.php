@@ -24,7 +24,28 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request): RedirectResponse|\Illuminate\Http\JsonResponse
     {
-        $request->authenticate();
+        // LOG: Authentication attempt
+        \Log::info('Login attempt', [
+            'email' => $request->input('email'),
+            'ip' => $request->ip(),
+            'ajax' => $request->ajax(),
+            'wants_json' => $request->wantsJson(),
+        ]);
+        
+        try {
+            $request->authenticate();
+            
+            \Log::info('Login successful', [
+                'email' => $request->input('email'),
+                'user_id' => auth()->id(),
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            \Log::warning('Login failed - Invalid credentials', [
+                'email' => $request->input('email'),
+                'ip' => $request->ip(),
+            ]);
+            throw $e;
+        }
 
         $request->session()->regenerate();
 
