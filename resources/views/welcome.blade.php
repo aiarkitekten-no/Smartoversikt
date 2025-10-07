@@ -413,8 +413,7 @@
         </div>
     </div>
     
-    <style>
-        /* Pixel-perfect retro styling */
+    <script>
         // Matrix Rain Effect
         const canvas = document.getElementById('matrix-canvas');
         const ctx = canvas.getContext('2d');
