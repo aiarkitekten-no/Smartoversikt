@@ -306,56 +306,10 @@
         </div>
     </div>
     
-    <!-- Game Over Overlay (90s style) -->
-    <div id="gameover-overlay" class="fixed inset-0 z-50 hidden">
-        <div class="absolute inset-0 bg-black"></div>
-        <div class="relative flex items-center justify-center h-full">
-            <div class="text-center">
-                <!-- Retro pixel-art style GAME OVER -->
-                <div class="game-over-text mb-8" style="
-                    font-family: 'Courier New', monospace;
-                    font-size: 8rem;
-                    font-weight: 900;
-                    color: #ff0040;
-                    text-shadow: 
-                        4px 4px 0px #000,
-                        8px 8px 0px rgba(255, 0, 64, 0.5),
-                        0 0 20px #ff0040,
-                        0 0 40px #ff0040,
-                        0 0 60px #ff0040;
-                    letter-spacing: 0.5rem;
-                    animation: gameOverGlitch 0.3s infinite;
-                ">
-                    GAME OVER
-                </div>
-                
-                <!-- Retro score display -->
-                <div class="text-4xl font-mono text-cyan-400 mb-4" style="
-                    text-shadow: 
-                        2px 2px 0px #000,
-                        0 0 10px #00ffff;
-                    letter-spacing: 0.3rem;
-                ">
-                    SCORE: 000000
-                </div>
-                
-                <!-- Insert coin message -->
-                <div class="text-2xl font-mono text-yellow-400 mt-8 blink-slow" style="
-                    text-shadow: 
-                        2px 2px 0px #000,
-                        0 0 10px #ffff00;
-                    letter-spacing: 0.2rem;
-                ">
-                    INSERT COIN TO CONTINUE
-                </div>
-                
-                <!-- Retro scanlines effect -->
-                <div class="scanlines-retro"></div>
-            </div>
-        </div>
-    </div>
-    
-    <style>
+    <!-- Game Over Screen (90s style) -->
+    <div id="gameover-overlay" class="fixed inset-0 z-[9999] hidden bg-black"
+         style="background: linear-gradient(180deg, #000000 0%, #1a0000 50%, #000000 100%);">
+        <div class="absolute inset-0 scanlines-retro"></div>    <style>
         /* Game Over glitch animation */
         @keyframes gameOverGlitch {
             0%, 90% { transform: translate(0); }
@@ -396,7 +350,7 @@
     </style>
     
     <!-- Self Destruct Overlay (original kept for countdown) -->
-    <div id="destruct-countdown" class="fixed inset-0 z-50 hidden">
+    <div id="destruct-countdown" class="fixed inset-0 z-[9999] hidden bg-black">
         <div class="absolute inset-0 bg-red-900 opacity-0" id="red-flash"></div>
         <div class="flex items-center justify-center h-full">
             <div class="text-center">
@@ -735,15 +689,22 @@
             });
             
             // Play ACCESS DENIED alarm
+            console.log('🔊 Playing ACCESS DENIED sound...');
             playAccessDenied();
             
             // Shake the container
+            console.log('💥 Shaking container...');
             container.classList.add('shake');
             
             setTimeout(() => {
+                console.log('⏰ Showing countdown overlay...');
+                
                 // Show destruct countdown overlay
                 destructCountdown.classList.remove('hidden');
+                console.log('Hidden class removed from destruct-countdown');
+                
                 redFlash.classList.add('flash');
+                console.log('Flash class added to red-flash');
                 
                 // Countdown
                 let count = 5;
