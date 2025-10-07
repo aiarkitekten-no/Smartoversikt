@@ -393,10 +393,10 @@
         }
     </style>
     
-    <!-- Self Destruct Overlay (original kept for countdown) -->
-    <div id="destruct-countdown" class="fixed inset-0 z-[9999] hidden bg-black">
+    <!-- Self Destruct Overlay (countdown) -->
+    <div id="destruct-countdown" class="fixed inset-0 z-[9999] hidden flex items-center justify-center bg-black">
         <div class="absolute inset-0 bg-red-900 opacity-0" id="red-flash"></div>
-        <div class="flex items-center justify-center h-full">
+        <div class="flex items-center justify-center h-full relative z-10">
             <div class="text-center">
                 <div class="text-8xl font-black text-red-500 mb-4">
                     ACCESS DENIED
@@ -743,9 +743,12 @@
             setTimeout(() => {
                 console.log('⏰ Showing countdown overlay...');
                 
-                // Show destruct countdown overlay
+                // Show destruct countdown overlay - FORCE DISPLAY
                 destructCountdown.classList.remove('hidden');
+                destructCountdown.style.display = 'flex';
+                destructCountdown.style.zIndex = '99999';
                 console.log('Hidden class removed from destruct-countdown');
+                console.log('Display set to flex, z-index:', destructCountdown.style.zIndex);
                 
                 redFlash.classList.add('flash');
                 console.log('Flash class added to red-flash');
@@ -790,12 +793,17 @@
                             
                             // Hide countdown overlay
                             destructCountdown.classList.add('hidden');
+                            destructCountdown.style.display = 'none';
                             console.log('Countdown overlay hidden');
                             
-                            // Show GAME OVER screen
+                            // Show GAME OVER screen - FORCE DISPLAY
                             gameoverOverlay.classList.remove('hidden');
+                            gameoverOverlay.style.display = 'block';
+                            gameoverOverlay.style.zIndex = '99999';
                             console.log('Game Over overlay visible - hidden class removed');
                             console.log('Game Over element:', gameoverOverlay);
+                            console.log('Game Over computed style:', window.getComputedStyle(gameoverOverlay).display);
+                            console.log('Game Over z-index:', window.getComputedStyle(gameoverOverlay).zIndex);
                             
                             // Play retro game over music
                             console.log('🎵 Playing Game Over music...');
