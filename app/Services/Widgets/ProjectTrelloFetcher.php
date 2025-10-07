@@ -10,9 +10,9 @@ class ProjectTrelloFetcher extends BaseWidgetFetcher
 {
     protected string $widgetKey = 'project.trello';
 
-    protected string $apiKey;
-    protected string $apiToken;
-    protected string $boardId;
+    protected ?string $apiKey;
+    protected ?string $apiToken;
+    protected ?string $boardId;
 
     public function __construct()
     {
@@ -23,6 +23,11 @@ class ProjectTrelloFetcher extends BaseWidgetFetcher
 
     public function fetchData(): array
     {
+        // Return demo data if no API credentials configured
+        if (!$this->apiKey || !$this->apiToken || !$this->boardId) {
+            return $this->getMockData();
+        }
+        
         try {
             $cards = $this->getAllCards();
             $lists = $this->getLists();
@@ -333,5 +338,26 @@ class ProjectTrelloFetcher extends BaseWidgetFetcher
                 'avatar' => $member['avatarUrl'] ?? null,
             ];
         }, $members);
+    }
+
+    /**
+     * Return mock/demo data when API credentials not configured
+     */
+    protected function getMockData(): array
+    {
+        return [
+            'timestamp' => Carbon::now()->toIso8601String(),
+            'by_list' => [
+                'Planlagt' => 0,
+                'Pågår' => 0,
+                'Ferdig' => 0,
+                'Bugs' => 0,
+                'Ønsker' => 0,
+            ],
+            'cards' => [],
+            'total_cards' => 0,
+            'ready' => false,
+            'error' => 'Trello API credentials not configured. Set TRELLO_API_KEY, TRELLO_API_TOKEN, and TRELLO_BOARD_ID in .env',
+        ];
     }
 }
