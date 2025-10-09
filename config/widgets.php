@@ -323,6 +323,14 @@ return [
             'fetcher' => \App\Services\Widgets\ToolsQuicklinksFetcher::class,
         ],
 
+        'tools.bills' => [
+            'name' => 'Forfall',
+            'description' => 'Månedlige regninger og forfallsdatoer',
+            'category' => 'tools',
+            'refresh_interval' => 300,
+            'fetcher' => \App\Services\Widgets\ToolsBillsFetcher::class,
+        ],
+
         // ----------
         // Security Widgets
         // ----------

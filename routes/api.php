@@ -30,4 +30,11 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/quicklinks', [App\Http\Controllers\Api\QuicklinkController::class, 'index']);
     Route::post('/quicklinks', [App\Http\Controllers\Api\QuicklinkController::class, 'store']);
     Route::delete('/quicklinks', [App\Http\Controllers\Api\QuicklinkController::class, 'destroy']);
+    
+    // Bills/Forfall actions
+    Route::get('/bills', [App\Http\Controllers\Api\BillsController::class, 'index']);
+    Route::post('/bills', [App\Http\Controllers\Api\BillsController::class, 'store']);
+    Route::put('/bills/{id}', [App\Http\Controllers\Api\BillsController::class, 'update']);
+    Route::post('/bills/{id}/toggle-paid', [App\Http\Controllers\Api\BillsController::class, 'togglePaid']);
+    Route::delete('/bills/{id}', [App\Http\Controllers\Api\BillsController::class, 'destroy']);
 });

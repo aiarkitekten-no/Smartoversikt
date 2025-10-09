@@ -66,6 +66,36 @@ class RefreshWidgetsCommand extends Command
             return 1;
         }
 
+        // Check if this is a user-specific widget
+        $userWidgets = \App\Models\UserWidget::with('user')
+            ->where('widget_id', $widget->id)
+            ->get();
+
+        if ($userWidgets->isNotEmpty()) {
+            // Refresh for each user
+            $this->info("Refreshing user-specific widget: {$key} for {$userWidgets->count()} users");
+            foreach ($userWidgets as $userWidget) {
+                $fetcher = new $fetcherClass();
+                $fetcher->setUserWidget($userWidget);
+                
+                if (!$force && !$fetcher->needsRefresh()) {
+                    $this->info("  User {$userWidget->user->name}: fresh, skipping.");
+                    continue;
+                }
+                
+                $this->info("  User {$userWidget->user->name}: refreshing...");
+                $snapshot = $fetcher->refreshSnapshot();
+                
+                if ($snapshot->status === 'success') {
+                    $this->info("    ✓ Success");
+                } else {
+                    $this->error("    ✗ Failed: {$snapshot->error_message}");
+                }
+            }
+            return 0;
+        }
+
+        // Global widget
         $fetcher = new $fetcherClass();
 
         if (!$force && !$fetcher->needsRefresh()) {
