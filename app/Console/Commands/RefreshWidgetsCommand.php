@@ -141,6 +141,37 @@ class RefreshWidgetsCommand extends Command
                 continue;
             }
 
+            // Check if this widget has user-specific instances
+            $userWidgets = \App\Models\UserWidget::with('user')
+                ->where('widget_id', $widget->id)
+                ->get();
+
+            if ($userWidgets->isNotEmpty()) {
+                // Refresh for each user
+                foreach ($userWidgets as $userWidget) {
+                    $fetcher = new $fetcherClass();
+                    $fetcher->setUserWidget($userWidget);
+                    
+                    if (!$force && !$fetcher->needsRefresh()) {
+                        $skipped++;
+                        continue;
+                    }
+
+                    $this->info("Refreshing: {$widget->key} (user: {$userWidget->user->name})");
+                    $snapshot = $fetcher->refreshSnapshot();
+
+                    if ($snapshot->status === 'success') {
+                        $this->info("  ✓ Success");
+                        $refreshed++;
+                    } else {
+                        $this->error("  ✗ Failed: {$snapshot->error_message}");
+                        $failed++;
+                    }
+                }
+                continue;
+            }
+
+            // Global widget (no user-specific data)
             $fetcher = new $fetcherClass();
 
             if (!$force && !$fetcher->needsRefresh()) {
@@ -167,4 +198,3 @@ class RefreshWidgetsCommand extends Command
     }
 }
 # SLUTT 6b9d4e1f7c2a
-
