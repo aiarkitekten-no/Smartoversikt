@@ -27,7 +27,7 @@
                     <h3 class="mt-2 text-sm font-medium text-gray-900">Ingen widgets ennå</h3>
                     <p class="mt-1 text-sm text-gray-500">Kom i gang ved å legge til din første widget.</p>
                     <div class="mt-6">
-                        <button @click="$dispatch('open-widget-picker')"
+                        <button @click="showPicker = true"
                                 class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
                             + Legg til widget
                         </button>
@@ -40,16 +40,21 @@
                             $widget = $userWidget->widget;
                             $data = $userWidget->getData();
                             $viewName = str_replace('.', '-', $widget->key);
+                            // Make CPU Cores widget compact (half width on larger screens)
+                            $isCompact = in_array($widget->key, ['system.cpu-cores']);
+                            $widgetSizeClass = $isCompact ? 'lg:col-span-1 xl:col-span-1' : '';
                         @endphp
                         
-                        <div class="widget-item h-full overflow-hidden shadow-sm sm:rounded-lg relative group flex flex-col"
+                    <div class="widget-item col-span-1 max-w-full h-full overflow-hidden shadow-sm sm:rounded-lg relative group flex flex-col {{ $widgetSizeClass }}"
                              data-widget-id="{{ $userWidget->id }}"
-                             data-position="{{ $userWidget->position }}">
+                             data-position="{{ $userWidget->position }}"
+                        data-compact="{{ $isCompact ? 'true' : 'false' }}"
+                        draggable="true">
                             
                             <!-- Widget Actions -->
-                            <div class="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-50">
+                            <div class="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-50 pointer-events-none">
                                 <button @click="openSettings({{ $userWidget->id }}, '{{ $widget->name }}', '{{ $widget->key }}', {{ $userWidget->refresh_interval ?? 'null' }}, {{ json_encode($userWidget->settings ?? []) }})"
-                                        class="p-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs shadow-lg"
+                                        class="p-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs shadow-lg pointer-events-auto"
                                         title="Innstillinger">
                                     ⚙️
                                 </button>
@@ -58,17 +63,35 @@
                                     @method('DELETE')
                                     <button type="submit" 
                                             onclick="return confirm('Er du sikker på at du vil fjerne denne widgeten?')"
-                                            class="p-1 bg-red-600 text-white rounded hover:bg-red-700 text-xs shadow-lg"
+                                            class="p-1 bg-red-600 text-white rounded hover:bg-red-700 text-xs shadow-lg pointer-events-auto"
                                             title="Fjern">
                                         ✕
                                     </button>
                                 </form>
                             </div>
 
-                            <!-- Drag handle -->
-                            <div class="drag-handle absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity cursor-move p-1 bg-gray-100 rounded text-gray-600 z-50"
-                                 title="Dra for å flytte">
-                                ⋮⋮
+                            <!-- Move buttons (Arrow keys) -->
+                            <div class="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity z-50 flex gap-1 pointer-events-none">
+                                <button onclick="moveWidget({{ $userWidget->id }}, 'up')"
+                                        class="p-1 bg-gray-700 text-white rounded hover:bg-gray-800 text-xs shadow-lg w-6 h-6 flex items-center justify-center pointer-events-auto"
+                                        title="Flytt opp">
+                                    ↑
+                                </button>
+                                <button onclick="moveWidget({{ $userWidget->id }}, 'down')"
+                                        class="p-1 bg-gray-700 text-white rounded hover:bg-gray-800 text-xs shadow-lg w-6 h-6 flex items-center justify-center pointer-events-auto"
+                                        title="Flytt ned">
+                                    ↓
+                                </button>
+                                <button onclick="moveWidget({{ $userWidget->id }}, 'left')"
+                                        class="p-1 bg-gray-700 text-white rounded hover:bg-gray-800 text-xs shadow-lg w-6 h-6 flex items-center justify-center pointer-events-auto"
+                                        title="Flytt venstre">
+                                    ←
+                                </button>
+                                <button onclick="moveWidget({{ $userWidget->id }}, 'right')"
+                                        class="p-1 bg-gray-700 text-white rounded hover:bg-gray-800 text-xs shadow-lg w-6 h-6 flex items-center justify-center pointer-events-auto"
+                                        title="Flytt høyre">
+                                    →
+                                </button>
                             </div>
 
                             <!-- Widget Content -->
@@ -83,12 +106,12 @@
             @endif
 
             <!-- Dashboard Header (moved below widgets) -->
-            <div class="mt-8 bg-white shadow-sm rounded-lg p-4">
+            <div class="mt-8 bg-white shadow-sm rounded-lg p-4 clear-both w-full">
                 <div class="flex justify-between items-center">
                     <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                         Dashboard
                     </h2>
-                    <button onclick="window.dispatchEvent(new CustomEvent('open-widget-picker'))" 
+                    <button @click="showPicker = true"
                             class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-sm font-medium">
                         + Legg til widget
                     </button>
@@ -487,63 +510,54 @@
                     const grid = document.getElementById('widgets-grid');
                     if (!grid) return;
 
-                    // Simple drag and drop without external library
-                    const items = grid.querySelectorAll('.widget-item');
-                    items.forEach(item => {
-                        const handle = item.querySelector('.drag-handle');
-                        if (handle) {
-                            handle.addEventListener('mousedown', () => {
-                                item.setAttribute('draggable', 'true');
-                            });
-                            handle.addEventListener('mouseup', () => {
-                                item.setAttribute('draggable', 'false');
-                            });
+                    // Mark grid as dropzone
+                    grid.addEventListener('dragover', (e) => {
+                        e.preventDefault();
+                        const afterElement = this.getDragAfterElement(grid, e.clientY, e.clientX);
+                        const dragging = grid.querySelector('.widget-item.dragging');
+                        if (!dragging) return;
+                        if (afterElement == null) {
+                            grid.appendChild(dragging);
+                        } else {
+                            grid.insertBefore(dragging, afterElement);
                         }
+                    });
 
+                    grid.addEventListener('drop', (e) => {
+                        e.preventDefault();
+                        this.updatePositions();
+                    });
+
+                    // Items
+                    grid.querySelectorAll('.widget-item').forEach((item) => {
                         item.addEventListener('dragstart', (e) => {
                             e.dataTransfer.effectAllowed = 'move';
-                            e.dataTransfer.setData('text/html', item.innerHTML);
-                            item.classList.add('opacity-50');
+                            item.classList.add('dragging', 'opacity-50');
                         });
-
-                        item.addEventListener('dragend', (e) => {
-                            item.classList.remove('opacity-50');
-                        });
-
-                        item.addEventListener('dragover', (e) => {
-                            e.preventDefault();
-                            e.dataTransfer.dropEffect = 'move';
-                            
-                            const afterElement = this.getDragAfterElement(grid, e.clientY);
-                            const draggable = document.querySelector('.opacity-50');
-                            
-                            if (afterElement == null) {
-                                grid.appendChild(draggable);
-                            } else {
-                                grid.insertBefore(draggable, afterElement);
-                            }
-                        });
-
-                        item.addEventListener('drop', (e) => {
-                            e.preventDefault();
-                            this.updatePositions();
+                        item.addEventListener('dragend', () => {
+                            item.classList.remove('dragging', 'opacity-50');
                         });
                     });
                 },
 
-                getDragAfterElement(container, y) {
-                    const draggableElements = [...container.querySelectorAll('.widget-item:not(.opacity-50)')];
-
-                    return draggableElements.reduce((closest, child) => {
-                        const box = child.getBoundingClientRect();
-                        const offset = y - box.top - box.height / 2;
-
-                        if (offset < 0 && offset > closest.offset) {
-                            return { offset: offset, element: child };
-                        } else {
-                            return closest;
+                getDragAfterElement(container, y, x) {
+                    const elements = [...container.querySelectorAll('.widget-item:not(.dragging)')];
+                    if (elements.length === 0) return null;
+                    // Choose the element with the smallest positive distance from pointer to its center
+                    let best = { dist: Infinity, element: null };
+                    for (const el of elements) {
+                        const r = el.getBoundingClientRect();
+                        const cx = r.left + r.width / 2;
+                        const cy = r.top + r.height / 2;
+                        const dy = y - cy;
+                        const dx = x - cx;
+                        const dist = Math.hypot(dx, dy);
+                        // Only consider elements that are after the pointer (above/left gets insert before)
+                        if (y < cy || (Math.abs(y - cy) < r.height / 2 && x < cx)) {
+                            if (dist < best.dist) best = { dist, element: el };
                         }
-                    }, { offset: Number.NEGATIVE_INFINITY }).element;
+                    }
+                    return best.element;
                 },
 
                 async updatePositions() {
@@ -768,6 +782,89 @@
                         alert('Kunne ikke legge til widget. Prøv igjen.');
                     }
                 }
+            }
+        }
+
+        // Global function to move widgets with arrow buttons
+        async function moveWidget(widgetId, direction) {
+            const grid = document.getElementById('widgets-grid');
+            if (!grid) return;
+
+            const items = Array.from(grid.querySelectorAll('.widget-item'));
+            const currentIndex = items.findIndex(item => parseInt(item.dataset.widgetId) === widgetId);
+            
+            if (currentIndex === -1) return;
+
+            let targetIndex = currentIndex;
+            // Robust column count: count items on first row using offsetTop
+            const getGridCols = (container) => {
+                const children = Array.from(container.querySelectorAll('.widget-item'));
+                if (children.length <= 1) return 1;
+                const firstTop = children[0].offsetTop;
+                let count = 0;
+                for (const el of children) {
+                    if (el.offsetTop !== firstTop) break;
+                    count++;
+                }
+                return Math.max(1, count);
+            };
+            const cols = getGridCols(grid);
+
+            switch(direction) {
+                case 'up':
+                    targetIndex = Math.max(0, currentIndex - cols);
+                    break;
+                case 'down':
+                    targetIndex = Math.min(items.length - 1, currentIndex + cols);
+                    break;
+                case 'left':
+                    targetIndex = Math.max(0, currentIndex - 1);
+                    break;
+                case 'right':
+                    targetIndex = Math.min(items.length - 1, currentIndex + 1);
+                    break;
+            }
+
+            if (targetIndex === currentIndex) return;
+
+            // Swap elements in DOM
+            const currentElement = items[currentIndex];
+            const targetElement = items[targetIndex];
+
+            if (targetIndex < currentIndex) {
+                grid.insertBefore(currentElement, targetElement);
+            } else {
+                grid.insertBefore(currentElement, targetElement.nextSibling);
+            }
+
+            // Update positions on server
+            const positions = [];
+            grid.querySelectorAll('.widget-item').forEach((item, index) => {
+                positions.push({
+                    id: parseInt(item.dataset.widgetId),
+                    position: index
+                });
+            });
+
+            try {
+                const response = await fetch('{{ route('user-widgets.positions') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({ positions })
+                });
+
+                if (response.ok) {
+                    console.log('Widget moved:', direction);
+                } else {
+                    console.error('Failed to save positions');
+                    location.reload(); // Reload to revert
+                }
+            } catch (error) {
+                console.error('Error moving widget:', error);
+                location.reload();
             }
         }
     </script>

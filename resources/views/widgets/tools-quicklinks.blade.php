@@ -1,107 +1,5 @@
 <div class="widget-card bg-gradient-to-br from-purple-600 to-indigo-700 text-white p-4 rounded-lg shadow-lg h-full flex flex-col"
-     x-data="{
-         ...widgetData('tools.quicklinks'),
-         links: [],
-         editMode: false,
-         selectedIds: [],
-         showAddForm: false,
-         newTitle: '',
-         newUrl: '',
-         saving: false,
-         
-         async loadLinks() {
-             try {
-                 const response = await fetch('/api/quicklinks', {
-                     headers: {
-                         'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]')?.content || ''
-                     }
-                 });
-                 const result = await response.json();
-                 if (result.success) {
-                     this.links = result.links;
-                 }
-             } catch (error) {
-                 console.error('Failed to load quicklinks:', error);
-             }
-         },
-         
-         async addLink() {
-             if (!this.newTitle || !this.newUrl) return;
-             
-             this.saving = true;
-             try {
-                 const response = await fetch('/api/quicklinks', {
-                     method: 'POST',
-                     headers: {
-                         'Content-Type': 'application/json',
-                         'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]')?.content || ''
-                     },
-                     body: JSON.stringify({
-                         title: this.newTitle,
-                         url: this.newUrl
-                     })
-                 });
-                 
-                 const result = await response.json();
-                 if (result.success) {
-                     this.links = result.links;
-                     this.newTitle = '';
-                     this.newUrl = '';
-                     this.showAddForm = false;
-                 }
-             } catch (error) {
-                 console.error('Failed to add link:', error);
-             } finally {
-                 this.saving = false;
-             }
-         },
-         
-         async deleteSelected() {
-             if (this.selectedIds.length === 0) return;
-             
-             this.saving = true;
-             try {
-                 const response = await fetch('/api/quicklinks', {
-                     method: 'DELETE',
-                     headers: {
-                         'Content-Type': 'application/json',
-                         'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]')?.content || ''
-                     },
-                     body: JSON.stringify({
-                         ids: this.selectedIds
-                     })
-                 });
-                 
-                 const result = await response.json();
-                 if (result.success) {
-                     this.links = result.links;
-                     this.selectedIds = [];
-                     this.editMode = false;
-                 }
-             } catch (error) {
-                 console.error('Failed to delete links:', error);
-             } finally {
-                 this.saving = false;
-             }
-         },
-         
-         toggleSelection(id) {
-             const index = this.selectedIds.indexOf(id);
-             if (index > -1) {
-                 this.selectedIds.splice(index, 1);
-             } else {
-                 this.selectedIds.push(id);
-             }
-         },
-         
-         toggleEditMode() {
-             this.editMode = !this.editMode;
-             if (!this.editMode) {
-                 this.selectedIds = [];
-             }
-         }
-     }"
-     x-init="init(); loadLinks()">
+     x-data="toolsQuicklinks()">
     
     <!-- Widget Title & Actions -->
     <div class="flex items-center justify-between mb-3">
@@ -130,6 +28,13 @@
             </button>
         </div>
     </div>
+
+    <!-- Error banner -->
+    <template x-if="lastError">
+        <div class="mb-3 text-xs bg-red-500 bg-opacity-20 border border-red-400 border-opacity-40 text-white px-3 py-2 rounded">
+            <span x-text="lastError"></span>
+        </div>
+    </template>
 
     <!-- Add Form -->
     <div x-show="showAddForm" 
@@ -177,12 +82,17 @@
     </div>
 
     <!-- Links List -->
-    <div class="flex-1 overflow-y-auto space-y-2" style="scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.3) transparent;">
+    <div class="widget-body space-y-2" style="scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.3) transparent;">
         <template x-if="links.length === 0">
-            <div class="text-center text-white text-opacity-70 py-8 text-sm">
+            <div class="text-center text-white text-opacity-70 py-8 text-sm" x-show="!loadingLinks">
                 <div class="text-4xl mb-2">🔗</div>
                 <div>Ingen lenker lagt til ennå</div>
                 <div class="text-xs mt-1">Klikk + for å legge til</div>
+            </div>
+        </template>
+        <template x-if="loadingLinks">
+            <div class="text-center text-white text-opacity-70 py-8 text-sm">
+                Laster lenker...
             </div>
         </template>
         

@@ -83,6 +83,21 @@ body {
     box-shadow: var(--shadow-idle);
     transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
     overflow: hidden;
+    /* Prevent abnormal tall widgets from expanding the grid massively. */
+    max-height: 520px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Make inner content scroll within widget while header/footer remain visible */
+.widget-card .widget-body {
+    overflow: auto;
+    flex: 1 1 auto;
+}
+
+.widget-card .widget-header,
+.widget-card .widget-footer {
+    flex: 0 0 auto;
 }
 
 .widget-card:hover {
@@ -114,6 +129,12 @@ body {
 .widget-card.size-l {
     grid-column: span 2;
     grid-row: span 2;
+}
+
+/* Ensure dashboard grid items never overflow their column */
+.widget-item {
+    grid-column: span 1 !important;
+    min-width: 0; /* prevent overflow pushing columns */
 }
 
 /* Widget Header - COMPRESSED */

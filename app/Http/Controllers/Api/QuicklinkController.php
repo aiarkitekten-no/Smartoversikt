@@ -28,7 +28,17 @@ class QuicklinkController extends Controller
      */
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        // Normalize incoming data (accept URLs without scheme and default to https)
+        $data = $request->all();
+        if (!empty($data['url'])) {
+            $trimmed = trim($data['url']);
+            if (!preg_match('#^https?://#i', $trimmed)) {
+                $trimmed = 'https://' . ltrim($trimmed, '/');
+            }
+            $data['url'] = $trimmed;
+        }
+
+        $validator = Validator::make($data, [
             'title' => 'required|string|max:100',
             'url' => 'required|url|max:500',
         ]);
@@ -45,8 +55,8 @@ class QuicklinkController extends Controller
         
         $newLink = [
             'id' => uniqid(),
-            'title' => $request->input('title'),
-            'url' => $request->input('url'),
+            'title' => $data['title'],
+            'url' => $data['url'],
             'created_at' => now()->toIso8601String(),
         ];
         

@@ -154,6 +154,139 @@ document.addEventListener('alpine:init', () => {
             this.stopRefresh();
         }
     }));
+
+    // Tools: Quicklinks component (extracted from Blade to avoid quoting issues)
+    Alpine.data('toolsQuicklinks', () => ({
+        links: [],
+        editMode: false,
+        selectedIds: [],
+        showAddForm: false,
+        newTitle: '',
+        newUrl: '',
+        saving: false,
+        loadingLinks: false,
+        lastError: '',
+
+        async loadLinks() {
+            try {
+                this.loadingLinks = true;
+                this.lastError = '';
+                const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+                const response = await fetch('/api/quicklinks', {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': csrf,
+                    },
+                    credentials: 'same-origin',
+                });
+                if (!response.ok) {
+                    this.lastError = `Kunne ikke laste lenker (HTTP ${response.status})`;
+                    return;
+                }
+                const result = await response.json();
+                if (result?.success && Array.isArray(result.links)) {
+                    this.links = result.links;
+                }
+            } catch (error) {
+                console.error('Quicklinks GET error:', error);
+                this.lastError = 'Feil ved lasting av Hurtiglenker';
+            } finally {
+                this.loadingLinks = false;
+            }
+        },
+
+        async addLink() {
+            if (!this.newTitle || !this.newUrl) return;
+            this.saving = true;
+            try {
+                // Normalize URL to https if missing scheme
+                let url = this.newUrl.trim();
+                if (!/^https?:\/\//i.test(url)) {
+                    url = 'https://' + url.replace(/^\/+/, '');
+                }
+
+                const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+                const response = await fetch('/api/quicklinks', {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': csrf,
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({ title: this.newTitle, url })
+                });
+                if (!response.ok) {
+                    this.lastError = `Kunne ikke lagre lenke (HTTP ${response.status})`;
+                    return;
+                }
+                const result = await response.json();
+                if (result?.success) {
+                    if (Array.isArray(result.links)) this.links = result.links;
+                    this.newTitle = '';
+                    this.newUrl = '';
+                    this.showAddForm = false;
+                    await this.loadLinks();
+                }
+            } catch (error) {
+                console.error('Quicklinks POST error:', error);
+                this.lastError = 'Feil ved lagring av Hurtiglenke';
+            } finally {
+                this.saving = false;
+            }
+        },
+
+        async deleteSelected() {
+            if (this.selectedIds.length === 0) return;
+            this.saving = true;
+            try {
+                const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+                const response = await fetch('/api/quicklinks', {
+                    method: 'DELETE',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': csrf,
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({ ids: this.selectedIds })
+                });
+                if (!response.ok) {
+                    this.lastError = `Kunne ikke slette lenker (HTTP ${response.status})`;
+                    return;
+                }
+                const result = await response.json();
+                if (result?.success) {
+                    if (Array.isArray(result.links)) this.links = result.links;
+                    this.selectedIds = [];
+                    this.editMode = false;
+                    await this.loadLinks();
+                }
+            } catch (error) {
+                console.error('Quicklinks DELETE error:', error);
+                this.lastError = 'Feil ved sletting av Hurtiglenker';
+            } finally {
+                this.saving = false;
+            }
+        },
+
+        toggleSelection(id) {
+            const index = this.selectedIds.indexOf(id);
+            if (index > -1) this.selectedIds.splice(index, 1); else this.selectedIds.push(id);
+        },
+
+        toggleEditMode() {
+            this.editMode = !this.editMode;
+            if (!this.editMode) this.selectedIds = [];
+        },
+
+        init() {
+            this.loadLinks();
+        }
+    }));
 });
 
 Alpine.start();
