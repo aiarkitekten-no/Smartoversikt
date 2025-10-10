@@ -1,5 +1,5 @@
 <x-app-layout>
-    <div class="py-2" x-data="dashboardManager()">
+    <div class="py-2 dashboard-scope" x-data="dashboardManager()">
         <div class="w-full px-2 sm:px-3 lg:px-4">
             
             @if (session('success'))

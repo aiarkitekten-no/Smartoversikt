@@ -316,6 +316,11 @@ document.addEventListener('alpine:init', () => {
             this.startTime = performance.now();
             this.lastTime = this.startTime;
             window.addEventListener('resize', () => this.resize(), { passive: true });
+            if (!this.ctx) {
+                // Canvas unsupported: stop gracefully
+                this.running = false;
+                return;
+            }
 
             // Pause when not visible
             this.observer = new IntersectionObserver((entries) => {
@@ -329,6 +334,8 @@ document.addEventListener('alpine:init', () => {
             // Seed some embers
             for (let i = 0; i < this.maxEmbers / 2; i++) this.spawnEmber(true);
 
+            // Draw a first frame immediately so something is visible even if paused
+            try { this.renderFrame(0, 0); } catch {}
             this.loop();
         },
 
