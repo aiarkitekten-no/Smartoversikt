@@ -308,9 +308,14 @@ document.addEventListener('alpine:init', () => {
         audioOn: false,
         audioCtx: null,
         masterGain: null,
+    // UI element refs (set in init via $refs)
+    frameEl: null,
+    glowEl: null,
 
         init() {
             this.canvas = this.$refs.fireCanvas;
+            this.frameEl = this.$refs.fireFrame || null;
+            this.glowEl = this.$refs.fireGlow || null;
             this.ctx = this.canvas.getContext('2d', { alpha: true });
             this.resize();
             this.startTime = performance.now();
@@ -362,6 +367,7 @@ document.addEventListener('alpine:init', () => {
             const t = (now - this.startTime) / 1000;
 
             this.renderFrame(t, dt);
+            this.updateFlicker(t);
             this.maybeCrackle(dt);
         },
 
@@ -556,6 +562,25 @@ document.addEventListener('alpine:init', () => {
                 }
             };
             requestAnimationFrame(decay);
+        },
+
+        updateFlicker(t) {
+            // Create a soft, non-jittery flicker synced to intensity
+            const i = Math.max(0.5, Math.min(2.0, this.intensity));
+            const base = 0.12; // baseline glow
+            const wave = (Math.sin(t * 7.3) + Math.sin(t * 5.1) * 0.5) / 1.5; // -1..1 -> softer
+            const n = this.noise(0.3, 0.7, t * 0.8); // -~0.66..0.66
+            const f = Math.max(0, Math.min(1, 0.5 + 0.35 * wave + 0.25 * n));
+            const alpha = (base + f * 0.35) * (0.8 + 0.2 * (i - 0.5));
+            const blur = 16 + f * 22;
+
+            if (this.frameEl) {
+                this.frameEl.style.boxShadow = `0 0 ${blur}px rgba(253,186,116, ${alpha})`;
+            }
+            if (this.glowEl) {
+                // Inner glow subtle modulation
+                this.glowEl.style.opacity = String(0.18 + f * 0.22);
+            }
         },
 
         toggleAudio() {
