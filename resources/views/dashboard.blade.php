@@ -103,8 +103,8 @@
                         </div>
                     @endforeach
 
-                    <!-- Full-width Dashboard row inside the grid -->
-                    <div class="col-span-full">
+                    <!-- Full-width Dashboard row inside the grid (explicit spans per breakpoint) -->
+                    <div class="col-span-1 md:col-span-2 lg:col-span-3 xl:col-span-4 2xl:col-span-5 col-start-1 col-end-[-1]">
                         <div class="mt-2 bg-white shadow-sm rounded-lg p-4 w-full">
                             <div class="flex justify-between items-center">
                                 <h2 class="font-semibold text-xl text-gray-800 leading-tight">
