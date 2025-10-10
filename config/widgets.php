@@ -76,6 +76,38 @@ return [
             'fetcher' => \App\Services\Widgets\SystemDiskFetcher::class,
         ],
 
+        'system.megabox' => [
+            'name' => 'MegaBox',
+            'description' => 'Komplett serverovervåking - CPU per kjerne, RAM, disk, nettverk',
+            'category' => 'system',
+            'refresh_interval' => 30, // 30 seconds
+            'fetcher' => \App\Services\Widgets\SystemMegaBoxFetcher::class,
+        ],
+
+        'system.cpu-cores' => [
+            'name' => 'CPU Kjerner',
+            'description' => 'Detaljert oversikt over alle CPU-kjerner individuelt',
+            'category' => 'system',
+            'refresh_interval' => 30, // 30 seconds
+            'fetcher' => \App\Services\Widgets\SystemCpuCoresFetcher::class,
+        ],
+
+        'system.mood' => [
+            'name' => 'Server Mood Indicator™',
+            'description' => 'Humoristisk serverstatus basert på CPU og RAM bruk',
+            'category' => 'system',
+            'refresh_interval' => 30, // 30 seconds
+            'fetcher' => \App\Services\Widgets\SystemMoodFetcher::class,
+        ],
+
+        'system.loadgraph' => [
+            'name' => 'Average Load (Last 7 Days)',
+            'description' => '7-dagers graf over gjennomsnittlig CPU og RAM bruk',
+            'category' => 'system',
+            'refresh_interval' => 3600, // 1 hour
+            'fetcher' => \App\Services\Widgets\SystemLoadGraphFetcher::class,
+        ],
+
         // Fase 4+ - Mail widgets
         'mail.queue' => [
             'name' => 'Mail Queue',
@@ -335,6 +367,36 @@ return [
         // Security Widgets
         // ----------
 
+        // Seasonal / Fun widgets
+        'season.snow-globe' => [
+            'name' => 'Snøkule',
+            'description' => 'Interaktiv snøkule med virvlende snø',
+            'category' => 'seasonal',
+            'refresh_interval' => 3600,
+            'fetcher' => \App\Services\Widgets\SeasonSnowGlobeFetcher::class,
+        ],
+        'season.tree-lights' => [
+            'name' => 'Juletrelys',
+            'description' => 'Juletre med animerte lysmønstre',
+            'category' => 'seasonal',
+            'refresh_interval' => 3600,
+            'fetcher' => \App\Services\Widgets\SeasonTreeLightsFetcher::class,
+        ],
+        'season.sleigh-tracker' => [
+            'name' => 'Nissens Radar',
+            'description' => 'Liten radar som viser nissens slede på rute',
+            'category' => 'seasonal',
+            'refresh_interval' => 3600,
+            'fetcher' => \App\Services\Widgets\SeasonSleighTrackerFetcher::class,
+        ],
+        'season.fireplace' => [
+            'name' => 'Peis med flammer',
+            'description' => 'Koselig peis med animerte flammer',
+            'category' => 'seasonal',
+            'refresh_interval' => 3600,
+            'fetcher' => \App\Services\Widgets\SeasonFireplaceFetcher::class,
+        ],
+
         // Fase 4 - Development widgets
     ],
 
@@ -415,6 +477,11 @@ return [
             'icon' => '🔧',
             'color' => 'purple',
         ],
+            'seasonal' => [
+                'name' => 'Sesong',
+                'icon' => '🎄',
+                'color' => 'emerald',
+            ],
     ],
 
     /*
