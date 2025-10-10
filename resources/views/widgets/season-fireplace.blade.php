@@ -17,13 +17,17 @@
              values="M150 130 C140 120, 155 110, 150 90 C160 100, 165 110, 160 120 C170 115, 175 130, 150 130;
                      M150 130 C145 120, 150 108, 148 92 C158 102, 166 110, 158 118 C168 116, 172 128, 150 130;
                      M150 130 C140 120, 155 110, 150 90 C160 100, 165 110, 160 120 C170 115, 175 130, 150 130"/>
-        <div class="p-4 flex flex-col gap-3" x-data="seasonFireplace()" @keydown.window.ctrl.sh="addLog()">
+        <div class="p-4 flex flex-col gap-3" x-data="seasonFireplace()" @keydown.window.ctrl.l="addLog()">
           <div class="flex items-center justify-between">
             <div class="text-sm text-amber-300/90">Peiskos – trykk Legg på ved for mer varme</div>
-            <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2">
               <button @click="addLog()" class="px-3 py-1.5 rounded bg-amber-600 hover:bg-amber-500 text-amber-50 text-sm shadow">
                 Legg på ved
               </button>
+          <button @click="toggleAudio()" class="px-3 py-1.5 rounded bg-slate-700 hover:bg-slate-600 text-slate-100 text-sm shadow">
+            <span x-show="!audioOn">Skru på knitring</span>
+            <span x-show="audioOn">Skru av knitring</span>
+          </button>
             </div>
           </div>
           <div class="relative rounded-lg overflow-hidden ring-1 ring-amber-500/20 shadow-inner" style="background: radial-gradient(120% 80% at 50% 80%, rgba(251,191,36,0.10), rgba(17,24,39,1))">

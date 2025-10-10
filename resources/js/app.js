@@ -304,6 +304,10 @@ document.addEventListener('alpine:init', () => {
         embers: [],
         maxEmbers: 160,
         observer: null,
+        // Audio
+        audioOn: false,
+        audioCtx: null,
+        masterGain: null,
 
         init() {
             this.canvas = this.$refs.fireCanvas;
@@ -351,6 +355,7 @@ document.addEventListener('alpine:init', () => {
             const t = (now - this.startTime) / 1000;
 
             this.renderFrame(t, dt);
+            this.maybeCrackle(dt);
         },
 
         // Simple pseudo-noise using layered sines for flame undulation
@@ -544,6 +549,68 @@ document.addEventListener('alpine:init', () => {
                 }
             };
             requestAnimationFrame(decay);
+        },
+
+        toggleAudio() {
+            this.audioOn = !this.audioOn;
+            if (this.audioOn && !this.audioCtx) {
+                this.initAudio();
+            }
+            if (this.audioCtx && this.audioCtx.state === 'suspended') {
+                this.audioCtx.resume();
+            }
+        },
+
+        initAudio() {
+            try {
+                this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                this.masterGain = this.audioCtx.createGain();
+                this.masterGain.gain.value = 0.12; // subtle
+                this.masterGain.connect(this.audioCtx.destination);
+            } catch (e) {
+                console.warn('Audio init failed', e);
+                this.audioOn = false;
+            }
+        },
+
+        maybeCrackle(dt) {
+            if (!this.audioOn || !this.audioCtx) return;
+            // Poisson process: avg rate scales with intensity
+            const rate = 3.5 * this.intensity; // per second
+            const expected = rate * dt;
+            if (Math.random() < expected) {
+                this.playCrackle();
+            }
+        },
+
+        playCrackle() {
+            const ctx = this.audioCtx;
+            const duration = 0.04 + Math.random() * 0.06;
+            const sampleRate = ctx.sampleRate;
+            const frameCount = Math.floor(sampleRate * duration);
+            const buffer = ctx.createBuffer(1, frameCount, sampleRate);
+            const data = buffer.getChannelData(0);
+            // envelope: sharp attack, exponential decay
+            for (let i = 0; i < frameCount; i++) {
+                const t = i / frameCount;
+                const attack = Math.min(1, t / 0.05);
+                const decay = Math.exp(-6 * t);
+                const noise = (Math.random() * 2 - 1) * (0.8 + Math.random() * 0.2);
+                data[i] = noise * attack * decay;
+            }
+            const src = ctx.createBufferSource();
+            src.buffer = buffer;
+            const g = ctx.createGain();
+            const base = 0.05 + Math.random() * 0.1;
+            g.gain.value = base;
+            src.connect(g);
+            g.connect(this.masterGain);
+            // small pitch variance via playbackRate
+            src.playbackRate.value = 0.9 + Math.random() * 0.4;
+            src.start();
+            src.onended = () => {
+                try { src.disconnect(); g.disconnect(); } catch {}
+            };
         },
     }));
 });
