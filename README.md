@@ -130,7 +130,7 @@
 
 - Node.js 18+
 
-- SQLite (or MySQL/PostgreSQL)- ✅ **Loading states** - Spinner og visuell feedback
+- MariaDB 10.6+ (MySQL kompatibel)- ✅ **Loading states** - Spinner og visuell feedback
 
 
 
@@ -164,9 +164,8 @@ php artisan key:generate
 
 3. Klikk "⚙️" for å endre innstillinger
 
-# Setup database
-
-touch database/database.sqlite4. Klikk "✕" for å fjerne widget
+# Setup database (MariaDB required)
+# Create database first, then configure .env with credentials
 
 php artisan migrate
 
@@ -258,7 +257,7 @@ SMS_SENDER=YourName
 
 # Phonero Telephony
 
-PHONERO_API_URL=https://bedriftsnett-api.phonero.net- **Database:** SQLite
+PHONERO_API_URL=https://bedriftsnett-api.phonero.net- **Database:** MariaDB 10.6+
 
 PHONERO_USERNAME=your_username
 
@@ -506,7 +505,7 @@ Click-to-dial functionality:
 
 - **CSS Framework**: Tailwind CSS 3.x
 
-- **Database**: SQLite (MySQL/PostgreSQL supported)- ✅ **SystemUptimeFetcher** – Server uptime og load average
+- **Database**: MariaDB 10.6+ (MySQL kompatibel)- ✅ **SystemUptimeFetcher** – Server uptime og load average
 
 - **HTTP Client**: Guzzle for API integrations
 
@@ -1087,7 +1086,7 @@ php artisan widgets:refresh --force
 
 - **Frontend**: Blade templates + Alpine.js 3.x│
 
-- **Database**: SQLite (kan byttes til MySQL)
+- **Database**: MariaDB 10.6+ (MySQL kompatibel)
 
 - **CSS**: Tailwind CSS (via Breeze)├── app/
 
@@ -1272,7 +1271,7 @@ php artisan test --filter ReadonlyCommandTest
 
 # ✓ it blocks non whitelisted commands
 
-# ✓ it rejects blacklisted patterns- **Database**: SQLite (development), kan byttes til MySQL- Laravel Breeze (Blade)If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+# ✓ it rejects blacklisted patterns- **Database**: MariaDB 10.6+ (MySQL kompatibel)- Laravel Breeze (Blade)If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
 
 # ✓ it handles command timeout
 
@@ -1342,7 +1341,7 @@ AI-learned/                         - Læring og dokumentasjon- **Read-only wrap
 
 - **Frontend**: Blade templates + Alpine.js 3.x  usikkert.json
 
-- **Database**: SQLite (kan byttes til MySQL)
+- **Database**: MariaDB 10.6+ (MySQL kompatibel)
 
 - **CSS**: Tailwind CSS (via Breeze)  godekilder.json- **Hemmeligheter**: Kun i `.env`, aldri sjekket inn- **[Tighten Co.](https://tighten.co)**
 
@@ -1447,7 +1446,7 @@ chmod -R 755 storage bootstrap/cache- **Frontend**: Blade templates + Alpine.js
 
 chown -R www-data:www-data storage bootstrap/cache
 
-```- **Database**: SQLite (development), kan byttes til MySQLIn order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```- **Database**: MariaDB 10.6+ (MySQL kompatibel)In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
 
 
 

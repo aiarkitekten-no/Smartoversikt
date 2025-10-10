@@ -128,7 +128,7 @@ Et kraftig, modulært widget-system bygget med Laravel 11, Alpine.js og Tailwind
 
 - **Backend:** Laravel 11.46.1, PHP 8.3.26- ✅ Dashboard-banner viser login-status og expiry- ✅ Unit-tester (4/4 passed)- ✅ AI-learned/ struktur## 📋 ProsjektstatusEt komplett, live dashboard uten mock-data eller placeholders. Bygget med Laravel 11, Blade og Alpine.js.<p align="center">
 
-- **Database:** SQLite
+- **Database:** MariaDB 10.6+
 
 - **Frontend:** Alpine.js 3.x, Tailwind CSS 3.x
 
@@ -724,7 +724,7 @@ php artisan widgets:refresh --force
 
 - **Frontend**: Blade templates + Alpine.js 3.x│
 
-- **Database**: SQLite (kan byttes til MySQL)
+- **Database**: MariaDB 10.6+ (MySQL kompatibel)
 
 - **CSS**: Tailwind CSS (via Breeze)├── app/
 
@@ -909,7 +909,7 @@ php artisan test --filter ReadonlyCommandTest
 
 # ✓ it blocks non whitelisted commands
 
-# ✓ it rejects blacklisted patterns- **Database**: SQLite (development), kan byttes til MySQL- Laravel Breeze (Blade)If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+# ✓ it rejects blacklisted patterns- **Database**: MariaDB 10.6+ (MySQL kompatibel)- Laravel Breeze (Blade)If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
 
 # ✓ it handles command timeout
 
@@ -979,7 +979,7 @@ AI-learned/                         - Læring og dokumentasjon- **Read-only wrap
 
 - **Frontend**: Blade templates + Alpine.js 3.x  usikkert.json
 
-- **Database**: SQLite (kan byttes til MySQL)
+- **Database**: MariaDB 10.6+ (MySQL kompatibel)
 
 - **CSS**: Tailwind CSS (via Breeze)  godekilder.json- **Hemmeligheter**: Kun i `.env`, aldri sjekket inn- **[Tighten Co.](https://tighten.co)**
 
@@ -1084,7 +1084,7 @@ chmod -R 755 storage bootstrap/cache- **Frontend**: Blade templates + Alpine.js
 
 chown -R www-data:www-data storage bootstrap/cache
 
-```- **Database**: SQLite (development), kan byttes til MySQLIn order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```- **Database**: MariaDB 10.6+ (MySQL kompatibel)In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
 
 
 

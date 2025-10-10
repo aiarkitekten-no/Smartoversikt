@@ -11,8 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // SQLite doesn't support complex ALTER TABLE operations
-        // We need to rebuild the table
+        // Rebuild the table with proper structure
         
         Schema::dropIfExists('user_widgets');
         

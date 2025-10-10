@@ -1,1 +1,4 @@
 *.sqlite*
+*.sql
+*.dump
+database.sqlite.ARCHIVED-*

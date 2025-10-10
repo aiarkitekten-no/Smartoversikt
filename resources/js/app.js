@@ -287,6 +287,265 @@ document.addEventListener('alpine:init', () => {
             this.loadLinks();
         }
     }));
+
+    // Seasonal: Fireplace (high-fidelity canvas flames + embers + glow)
+    Alpine.data('seasonFireplace', () => ({
+        intensity: 1.0, // 0.5 - 2.0
+        emberDensity: 1.0, // 0 - 2
+        running: true,
+        canvas: null,
+        ctx: null,
+        dpr: Math.max(1, window.devicePixelRatio || 1),
+        width: 0,
+        height: 0,
+        rafId: 0,
+        startTime: 0,
+        lastTime: 0,
+        embers: [],
+        maxEmbers: 160,
+        observer: null,
+
+        init() {
+            this.canvas = this.$refs.fireCanvas;
+            this.ctx = this.canvas.getContext('2d', { alpha: true });
+            this.resize();
+            this.startTime = performance.now();
+            this.lastTime = this.startTime;
+            window.addEventListener('resize', () => this.resize(), { passive: true });
+
+            // Pause when not visible
+            this.observer = new IntersectionObserver((entries) => {
+                for (const e of entries) {
+                    this.running = e.isIntersecting;
+                    if (this.running) this.loop();
+                }
+            }, { threshold: 0.05 });
+            this.observer.observe(this.canvas);
+
+            // Seed some embers
+            for (let i = 0; i < this.maxEmbers / 2; i++) this.spawnEmber(true);
+
+            this.loop();
+        },
+
+        destroy() {
+            cancelAnimationFrame(this.rafId);
+            if (this.observer) this.observer.disconnect();
+        },
+
+        resize() {
+            const rect = this.canvas.getBoundingClientRect();
+            this.width = Math.max(300, Math.floor(rect.width));
+            this.height = Math.max(180, Math.floor(rect.height));
+            this.canvas.width = Math.floor(this.width * this.dpr);
+            this.canvas.height = Math.floor(this.height * this.dpr);
+            this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+        },
+
+        loop() {
+            if (!this.running) return;
+            this.rafId = requestAnimationFrame(() => this.loop());
+            const now = performance.now();
+            const dt = Math.min(0.05, (now - this.lastTime) / 1000);
+            this.lastTime = now;
+            const t = (now - this.startTime) / 1000;
+
+            this.renderFrame(t, dt);
+        },
+
+        // Simple pseudo-noise using layered sines for flame undulation
+        noise(x, y, t) {
+            return (
+                Math.sin(x * 3.1 + t * 2.3) * 0.5 +
+                Math.sin(y * 4.7 - t * 1.7) * 0.5 +
+                Math.sin((x + y) * 2.1 + t * 0.8) * 0.5
+            ) / 1.5;
+        },
+
+        renderFrame(t, dt) {
+            const ctx = this.ctx;
+            const w = this.width;
+            const h = this.height;
+            ctx.clearRect(0, 0, w, h);
+
+            // Background wall gradient
+            const bg = ctx.createLinearGradient(0, 0, 0, h);
+            bg.addColorStop(0, '#1f2937');
+            bg.addColorStop(1, '#0f172a');
+            ctx.fillStyle = bg;
+            ctx.fillRect(0, 0, w, h);
+
+            // Hearth/base
+            ctx.fillStyle = '#3b2e2e';
+            ctx.fillRect(w * 0.1, h * 0.82, w * 0.8, h * 0.02);
+
+            // Logs
+            this.drawLogs();
+
+            // Glow backdrop (adds warmth)
+            this.drawGlow(t);
+
+            // Flames (multiple layers with additive blending)
+            ctx.globalCompositeOperation = 'lighter';
+            this.drawFlameLayer(t, 1.0, '#facc15', 0.85, 0.9);
+            this.drawFlameLayer(t + 0.7, 1.25, '#fb923c', 0.75, 0.95);
+            this.drawFlameLayer(t + 1.3, 1.5, '#ef4444', 0.6, 1.0);
+            ctx.globalCompositeOperation = 'source-over';
+
+            // Embers (sparks)
+            this.updateEmbers(dt);
+            this.drawEmbers();
+
+            // Heat shimmer overlay (subtle)
+            this.drawHeatShimmer(t);
+        },
+
+        drawLogs() {
+            const ctx = this.ctx, w = this.width, h = this.height;
+            ctx.save();
+            ctx.fillStyle = '#6b3f3a';
+            const y = h * 0.8;
+            const logs = [
+                { x: w * 0.38, len: w * 0.28, rot: -0.05 },
+                { x: w * 0.34, len: w * 0.32, rot: 0.04 },
+                { x: w * 0.44, len: w * 0.22, rot: 0.02 },
+            ];
+            logs.forEach(l => {
+                ctx.save();
+                ctx.translate(l.x, y);
+                ctx.rotate(l.rot);
+                ctx.fillRect(-l.len / 2, -8, l.len, 16);
+                // end caps
+                ctx.fillStyle = '#7c4b45';
+                ctx.beginPath();
+                ctx.arc(-l.len / 2, 0, 8, 0, Math.PI * 2);
+                ctx.arc(l.len / 2, 0, 8, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            });
+            ctx.restore();
+        },
+
+        drawGlow(t) {
+            const ctx = this.ctx, w = this.width, h = this.height;
+            const grad = ctx.createRadialGradient(w * 0.5, h * 0.78, 10, w * 0.5, h * 0.78, w * 0.45);
+            grad.addColorStop(0, 'rgba(251, 191, 36, 0.35)'); // amber-400
+            grad.addColorStop(0.5, 'rgba(249, 115, 22, 0.18)'); // orange-500
+            grad.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+        },
+
+        drawFlameLayer(t, scale, color, heightFactor, flicker) {
+            const ctx = this.ctx, w = this.width, h = this.height;
+            const baseY = h * 0.8;
+            const flameH = h * 0.3 * heightFactor * this.intensity;
+            const segments = 14;
+            ctx.beginPath();
+            ctx.moveTo(w * 0.35, baseY);
+            for (let i = 0; i <= segments; i++) {
+                const u = i / segments;
+                const x = w * (0.35 + u * 0.3);
+                const n = this.noise(u * 2 + scale, t * (0.8 + 0.3 * scale), t * 0.3);
+                const bulge = Math.sin(u * Math.PI) * flameH;
+                const jitter = (n * 0.5 + 0.5) * 20 * flicker;
+                const y = baseY - bulge - jitter;
+                ctx.lineTo(x, y);
+            }
+            ctx.lineTo(w * 0.65, baseY);
+            ctx.closePath();
+            const grad = ctx.createLinearGradient(w * 0.5, baseY - flameH, w * 0.5, baseY);
+            grad.addColorStop(0, color);
+            grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+            ctx.fillStyle = grad;
+            ctx.fill();
+        },
+
+        spawnEmber(seed = false) {
+            const w = this.width, h = this.height;
+            const baseX = w * (0.4 + Math.random() * 0.2);
+            const baseY = h * 0.78 + (seed ? Math.random() * 8 : 0);
+            const speed = (30 + Math.random() * 60) * this.intensity;
+            const life = 1.5 + Math.random() * 1.5;
+            const size = 1 + Math.random() * 2;
+            this.embers.push({ x: baseX, y: baseY, vx: (Math.random() - 0.5) * 10, vy: -speed, t: 0, life, size });
+            if (this.embers.length > this.maxEmbers) this.embers.shift();
+        },
+
+        updateEmbers(dt) {
+            const spawnRate = 40 * this.emberDensity * this.intensity;
+            const count = Math.min(6, Math.floor(spawnRate * dt));
+            for (let i = 0; i < count; i++) this.spawnEmber();
+            const gravity = 8;
+            for (let i = this.embers.length - 1; i >= 0; i--) {
+                const e = this.embers[i];
+                e.t += dt;
+                e.x += e.vx * dt;
+                e.y += e.vy * dt + gravity * dt; // slight gravity downward
+                e.vx *= 0.98;
+                e.vy *= 0.99;
+                if (e.t > e.life || e.y < this.height * 0.3) this.embers.splice(i, 1);
+            }
+        },
+
+        drawEmbers() {
+            const ctx = this.ctx;
+            for (const e of this.embers) {
+                const alpha = Math.max(0, 1 - e.t / e.life);
+                const grad = ctx.createRadialGradient(e.x, e.y, 0, e.x, e.y, 6 + e.size * 2);
+                grad.addColorStop(0, `rgba(255,220,120,${0.5 * alpha})`);
+                grad.addColorStop(1, 'rgba(255,220,120,0)');
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.arc(e.x, e.y, 6 + e.size * 0.5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        },
+
+        drawHeatShimmer(t) {
+            const ctx = this.ctx, w = this.width, h = this.height;
+            ctx.save();
+            ctx.globalAlpha = 0.25;
+            // Wavy translucent bands above the flame region
+            const bands = 12;
+            for (let i = 0; i < bands; i++) {
+                const yy = h * 0.5 + (i / bands) * h * 0.25;
+                const amp = 2 + i * 0.5;
+                const phase = t * (0.6 + i * 0.03);
+                ctx.beginPath();
+                ctx.moveTo(0, yy + Math.sin(phase) * amp);
+                for (let x = 0; x <= w; x += 12) {
+                    const y = yy + Math.sin(x * 0.03 + phase) * amp;
+                    ctx.lineTo(x, y);
+                }
+                ctx.lineTo(w, yy + 40);
+                ctx.lineTo(0, yy + 40);
+                ctx.closePath();
+                const grad = ctx.createLinearGradient(0, yy, 0, yy + 40);
+                grad.addColorStop(0, 'rgba(255,255,255,0.03)');
+                grad.addColorStop(1, 'rgba(255,255,255,0)');
+                ctx.fillStyle = grad;
+                ctx.fill();
+            }
+            ctx.restore();
+        },
+
+        // UI actions
+        addLog() {
+            this.intensity = Math.min(2.0, this.intensity + 0.15);
+            this.emberDensity = Math.min(2.0, this.emberDensity + 0.1);
+            // Gradual decay back to baseline
+            const targetI = 1.0, targetE = 1.0;
+            const decay = () => {
+                this.intensity = this.intensity * 0.985 + targetI * 0.015;
+                this.emberDensity = this.emberDensity * 0.985 + targetE * 0.015;
+                if (Math.abs(this.intensity - targetI) > 0.02 || Math.abs(this.emberDensity - targetE) > 0.02) {
+                    requestAnimationFrame(decay);
+                }
+            };
+            requestAnimationFrame(decay);
+        },
+    }));
 });
 
 Alpine.start();
