@@ -103,8 +103,8 @@
                         </div>
                     @endforeach
 
-                    <!-- Full-width Dashboard row inside the grid (explicit spans per breakpoint) -->
-                    <div class="col-span-1 md:col-span-2 lg:col-span-3 xl:col-span-4 2xl:col-span-5 col-start-1 col-end-[-1]">
+                    <!-- Full-width Dashboard row inside the grid (force new row) -->
+                    <div class="col-span-1 md:col-span-2 lg:col-span-3 xl:col-span-4 2xl:col-span-5" style="grid-column: 1 / -1;">
                         <div class="mt-2 bg-white shadow-sm rounded-lg p-4 w-full">
                             <div class="flex justify-between items-center">
                                 <h2 class="font-semibold text-xl text-gray-800 leading-tight">
@@ -117,18 +117,20 @@
                             </div>
                         </div>
                     </div>
+                    <!-- Footer with user info (inside grid, full width) -->
+                    <div class="col-span-1 md:col-span-2 lg:col-span-3 xl:col-span-4 2xl:col-span-5" style="grid-column: 1 / -1;">
+                        <div class="mt-2 text-center text-xs text-gray-500 space-y-1 pb-4">
+                            <p>Logget inn som {{ Auth::user()->name }} ({{ Auth::user()->email }})</p>
+                            @if(Auth::viaRemember())
+                                <p>⏱️ Sesjon utløper om {{ config('dashboard.remember_days', 30) }} dager</p>
+                            @else
+                                <p>⏱️ Sesjon utløper om {{ config('session.lifetime', 120) }} minutter</p>
+                            @endif
+                        </div>
+                    </div>
                 </div>
             @endif
 
-            <!-- Footer with user info -->
-            <div class="mt-4 text-center text-xs text-gray-500 space-y-1 pb-4">
-                <p>Logget inn som {{ Auth::user()->name }} ({{ Auth::user()->email }})</p>
-                @if(Auth::viaRemember())
-                    <p>⏱️ Sesjon utløper om {{ config('dashboard.remember_days', 30) }} dager</p>
-                @else
-                    <p>⏱️ Sesjon utløper om {{ config('session.lifetime', 120) }} minutter</p>
-                @endif
-            </div>
         </div>
 
         <!-- Widget Picker Modal -->
