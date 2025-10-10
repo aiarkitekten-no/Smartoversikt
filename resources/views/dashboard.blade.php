@@ -102,21 +102,23 @@
                             ])
                         </div>
                     @endforeach
+
+                    <!-- Full-width Dashboard row inside the grid -->
+                    <div class="col-span-full">
+                        <div class="mt-2 bg-white shadow-sm rounded-lg p-4 w-full">
+                            <div class="flex justify-between items-center">
+                                <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                                    Dashboard
+                                </h2>
+                                <button @click="showPicker = true"
+                                        class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-sm font-medium">
+                                    + Legg til widget
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             @endif
-
-            <!-- Dashboard Header (moved below widgets) -->
-            <div class="mt-8 bg-white shadow-sm rounded-lg p-4 clear-both w-full">
-                <div class="flex justify-between items-center">
-                    <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                        Dashboard
-                    </h2>
-                    <button @click="showPicker = true"
-                            class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-sm font-medium">
-                        + Legg til widget
-                    </button>
-                </div>
-            </div>
 
             <!-- Footer with user info -->
             <div class="mt-4 text-center text-xs text-gray-500 space-y-1 pb-4">
