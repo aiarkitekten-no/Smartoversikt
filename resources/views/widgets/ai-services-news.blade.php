@@ -1,13 +1,12 @@
 <div 
     class="widget h-full"
-    x-data="aiServicesNews()"
-    x-init="init()"
+    x-data="aiServicesNews('{{ $widget->key ?? 'ai.services-news' }}')"
 >
     <div class="widget-header">
         <h3 class="widget-title">🤖 AI Services News</h3>
         <div class="flex items-center space-x-2">
             <button 
-                @click="refresh()" 
+                @click="fetchData()" 
                 class="widget-action"
                 :disabled="loading"
                 title="Refresh news"
@@ -78,7 +77,7 @@
             </div>
         </template>
 
-        <template x-if="!loading && !error">
+                <template x-if="!loading && !error">
             <!-- News List -->
             <div class="space-y-2 max-h-96 overflow-y-auto custom-scrollbar">
                 <template x-for="item in filteredNews" :key="item.url">
@@ -143,13 +142,91 @@
             <!-- Footer -->
             <div class="mt-3 pt-2 border-t border-gray-800 text-xs text-gray-500 flex items-center justify-between">
                 <div>
-                    Updated: <span x-text="formatDate(data.updated_at)"></span>
+                    <span x-show="lastUpdate" x-text="'Updated: ' + lastUpdate"></span>
                 </div>
                 <div>
-                    <span x-text="filteredNews.length"></span> news items
+                    <span x-text="filteredNews.length"></span> items
                 </div>
             </div>
         </template>
+    </div>
+</div>
+
+<script>
+function aiServicesNews(widgetKey) {
+    // Extend the base widgetData functionality
+    const base = window.Alpine.reactive(widgetData(widgetKey));
+    
+    return {
+        ...base,
+        activeFilter: 'all',
+
+        get filteredNews() {
+            if (!this.data || !this.data.news) return [];
+
+            if (this.activeFilter === 'all') {
+                return this.data.news;
+            }
+
+            return this.data.news.filter(item => item.category === this.activeFilter);
+        },
+
+        formatDate(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+            if (diffDays === 0) return 'Today';
+            if (diffDays === 1) return 'Yesterday';
+            if (diffDays < 7) return `${diffDays} days ago`;
+            if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+
+            return date.toLocaleDateString('no-NO', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+        },
+
+        isNew(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+            return diffDays <= 7;
+        }
+    };
+}
+</script>
+
+<style>
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+</style>
     </div>
 </div>
 
