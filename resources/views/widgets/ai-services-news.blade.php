@@ -170,7 +170,7 @@ function aiServicesNews() {
             this.error = false;
 
             try {
-                const response = await fetch('/api/widgets/ai-services-news');
+                const response = await fetch('/api/widgets/ai.services-news');
                 
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
