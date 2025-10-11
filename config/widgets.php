@@ -397,6 +397,26 @@ return [
             'fetcher' => \App\Services\Widgets\SeasonFireplaceFetcher::class,
         ],
 
+        // ----------
+        // Inspiration & AI Widgets
+        // ----------
+
+        'inspiration.quote' => [
+            'name' => 'Quote of The Day',
+            'description' => 'Daglig inspirerende sitat',
+            'category' => 'inspiration',
+            'refresh_interval' => 86400, // 24 timer - ett sitat per dag
+            'fetcher' => \App\Services\Widgets\InspirationQuoteFetcher::class,
+        ],
+
+        'ai.services-news' => [
+            'name' => 'AI Services News',
+            'description' => 'Siste nyheter fra OpenAI, Claude, Copilot, VS Code',
+            'category' => 'ai',
+            'refresh_interval' => 1800, // 30 minutter
+            'fetcher' => \App\Services\Widgets\AiServicesNewsFetcher::class,
+        ],
+
         // Fase 4 - Development widgets
     ],
 
@@ -482,6 +502,16 @@ return [
                 'icon' => '🎄',
                 'color' => 'emerald',
             ],
+        'inspiration' => [
+            'name' => 'Inspirasjon',
+            'icon' => '💭',
+            'color' => 'pink',
+        ],
+        'ai' => [
+            'name' => 'AI & Tech',
+            'icon' => '🤖',
+            'color' => 'violet',
+        ],
     ],
 
     /*
