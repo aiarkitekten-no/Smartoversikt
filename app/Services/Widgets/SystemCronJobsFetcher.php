@@ -15,6 +15,7 @@ class SystemCronJobsFetcher extends BaseWidgetFetcher
             'jobs' => $this->getScheduledJobs(),
             'summary' => $this->getSummary(),
             'last_run' => $this->getLastSchedulerRun(),
+            'crontab_running' => $this->isCrontabRunning(),
             'timestamp' => now()->toIso8601String(),
         ];
     }
@@ -198,5 +199,20 @@ class SystemCronJobsFetcher extends BaseWidgetFetcher
         }
 
         return null;
+    }
+
+    protected function isCrontabRunning(): bool
+    {
+        // Check if cron process exists (pgrep returns PIDs if found)
+        $result = \App\Support\Sys\ReadonlyCommand::run("pgrep cron");
+        
+        if ($result['success'] && !empty(trim($result['output']))) {
+            return true;
+        }
+        
+        // Try crond process name (CentOS/RHEL)
+        $result = \App\Support\Sys\ReadonlyCommand::run("pgrep crond");
+        
+        return $result['success'] && !empty(trim($result['output']));
     }
 }

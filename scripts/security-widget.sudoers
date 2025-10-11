@@ -1,0 +1,13 @@
+# Security Widget - Safe Read-Only Access to Security Logs
+# Created: 2025-10-11
+# Purpose: Allow web server users to read security logs via wrapper scripts
+
+# Security Log Reader - Read system security logs
+psaadm ALL=(ALL) NOPASSWD: /usr/local/bin/security-log-reader.sh *
+www-data ALL=(ALL) NOPASSWD: /usr/local/bin/security-log-reader.sh *
+smartesider.no_2vii2f537vr ALL=(ALL) NOPASSWD: /usr/local/bin/security-log-reader.sh *
+
+# Fail2ban Status - Read fail2ban status and banned IPs
+psaadm ALL=(ALL) NOPASSWD: /usr/local/bin/fail2ban-status.sh *
+www-data ALL=(ALL) NOPASSWD: /usr/local/bin/fail2ban-status.sh *
+smartesider.no_2vii2f537vr ALL=(ALL) NOPASSWD: /usr/local/bin/fail2ban-status.sh *

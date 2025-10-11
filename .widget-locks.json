@@ -1,0 +1,19 @@
+{
+  "locked_widgets": [
+    "demo.clock",
+    "mail.imap-inbox",
+    "business.bills",
+    "tools.rss-reader",
+    "tools.quicklinks",
+    "dev.github",
+    "season.fireplace",
+    "season.tree-lights",
+    "weather.forecast",
+    "analytics.visits"
+  ],
+  "work_mode": "LOCKED",
+  "current_widget": null,
+  "locked_at": "2025-10-11T10:35:00Z",
+  "locked_by": "ai_safety_guard",
+  "note": "All widgets are locked by default. Use scripts/unlock-widget.sh to edit."
+}

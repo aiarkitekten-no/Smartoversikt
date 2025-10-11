@@ -10,9 +10,10 @@ class UserWidget extends Model
     protected $fillable = [
         'user_id',
         'widget_id',
+        'widget_key',
         'settings',
-        'refresh_interval',
         'position',
+        'size',
         'is_visible',
     ];
 
@@ -46,7 +47,12 @@ class UserWidget extends Model
      */
     public function widget(): BelongsTo
     {
-        return $this->belongsTo(Widget::class);
+        // Support both new schema (widget_id) and legacy schema (widget_key)
+        if (\Schema::hasColumn('user_widgets', 'widget_id')) {
+            return $this->belongsTo(Widget::class, 'widget_id');
+        } else {
+            return $this->belongsTo(Widget::class, 'widget_key', 'key');
+        }
     }
 
     /**

@@ -1,0 +1,46 @@
+# ⛔ FORBIDDEN COMMANDS - ALDRI KJØR DISSE
+
+## Destruktive Database-kommandoer
+php artisan migrate:fresh
+php artisan migrate:fresh --seed
+php artisan migrate:reset
+php artisan db:wipe
+
+## Farlige Rollback-kommandoer
+php artisan migrate:rollback --step=999
+php artisan migrate:rollback --step=10
+
+## SQL-kommandoer som krever ekstra forsiktighet
+DROP TABLE
+DROP DATABASE
+TRUNCATE TABLE
+DELETE FROM users
+DELETE FROM widgets
+DELETE FROM user_widgets
+
+## Seeders i produksjon (krever --force flag)
+php artisan db:seed --force
+
+# ✅ TRYGGE ALTERNATIVER
+
+## I stedet for migrate:fresh:
+./scripts/safe-migrate.sh
+php artisan migrate
+
+## I stedet for truncate i seeders:
+Model::firstOrCreate(['key' => $value], $data);
+Model::updateOrCreate(['key' => $value], $data);
+
+## Backup først:
+./scripts/safe-migrate.sh  # Tar automatisk backup
+mysqldump -u user -p database > backup.sql
+
+# 🤖 AI INSTRUCTION
+Hvis AI foreslår noen av kommandoene over:
+1. STOPP og vurder konsekvensene
+2. Sjekk om du er i produksjon (APP_ENV=production)
+3. Ta backup først
+4. Bruk trygge alternativer
+5. Spør brukeren om bekreftelse
+
+# SIST OPPDATERT: 2025-10-11

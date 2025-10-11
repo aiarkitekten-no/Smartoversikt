@@ -32,6 +32,8 @@ class ReadonlyCommand
         'nproc',
         'grep -c ^processor /proc/cpuinfo',
         'ps aux',
+        'pgrep',
+        'geoiplookup',
         'ls -t /boot/vmlinuz-*',
         'cat /sys/class/thermal/thermal_zone0/temp',
         'cat /sys/class/thermal/thermal_zone1/temp',
@@ -60,6 +62,9 @@ class ReadonlyCommand
         'sudo iptables -D',
         'sudo fail2ban-client set',
         'at now + 2 hours',
+        // Security widget wrappers
+        'sudo /usr/local/bin/security-log-reader.sh',
+        'sudo /usr/local/bin/fail2ban-status.sh',
     ];
     
     /**

@@ -1,5 +1,7 @@
 <x-app-layout>
-    <div class="py-2 dashboard-scope" x-data="dashboardManager()">
+    <div class="py-2 dashboard-scope" 
+         x-data="dashboardManager()"
+         @open-widget-settings.window="openSettings($event.detail.userWidgetId, $event.detail.widgetName, $event.detail.widgetKey, $event.detail.refreshInterval, $event.detail.settings)">
         <div class="w-full px-2 sm:px-3 lg:px-4">
             
             @if (session('success'))
@@ -58,16 +60,11 @@
                                         title="Innstillinger">
                                     ⚙️
                                 </button>
-                                <form method="POST" action="{{ route('user-widgets.destroy', $userWidget) }}" class="inline">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" 
-                                            onclick="return confirm('Er du sikker på at du vil fjerne denne widgeten?')"
-                                            class="p-1 bg-red-600 text-white rounded hover:bg-red-700 text-xs shadow-lg pointer-events-auto"
-                                            title="Fjern">
-                                        ✕
-                                    </button>
-                                </form>
+                                <button @click="removeWidget({{ $userWidget->id }}, '{{ addslashes($widget->name) }}')"
+                                        class="p-1 bg-red-600 text-white rounded hover:bg-red-700 text-xs shadow-lg pointer-events-auto"
+                                        title="Fjern">
+                                    ✕
+                                </button>
                             </div>
 
                             <!-- Move buttons (Arrow keys) -->
@@ -103,39 +100,37 @@
                         </div>
                     @endforeach
 
-                    <!-- Full-width Dashboard row inside the grid (force new row) -->
-                    <div class="col-span-1 md:col-span-2 lg:col-span-3 xl:col-span-4 2xl:col-span-5" style="grid-column: 1 / -1;">
-                        <div class="mt-2 bg-white shadow-sm rounded-lg p-4 w-full">
-                            <div class="flex justify-between items-center">
-                                <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                                    Dashboard
-                                </h2>
-                                <button @click="showPicker = true"
-                                        class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-sm font-medium">
-                                    + Legg til widget
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Footer with user info (inside grid, full width) -->
-                    <div class="col-span-1 md:col-span-2 lg:col-span-3 xl:col-span-4 2xl:col-span-5" style="grid-column: 1 / -1;">
-                        <div class="mt-2 text-center text-xs text-gray-500 space-y-1 pb-4">
-                            <p>Logget inn som {{ Auth::user()->name }} ({{ Auth::user()->email }})</p>
-                            @if(Auth::viaRemember())
-                                <p>⏱️ Sesjon utløper om {{ config('dashboard.remember_days', 30) }} dager</p>
-                            @else
-                                <p>⏱️ Sesjon utløper om {{ config('session.lifetime', 120) }} minutter</p>
-                            @endif
-                        </div>
-                    </div>
                 </div>
             @endif
 
+            <!-- Bottom Dashboard controls (outside the grid, after widgets) -->
+            <div class="mt-2 bg-white shadow-sm rounded-lg p-4 w-full">
+                <div class="flex justify-between items-center">
+                    <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                        Dashboard
+                    </h2>
+                    <button @click="showPicker = true"
+                            class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-sm font-medium">
+                        + Legg til widget
+                    </button>
+                </div>
+            </div>
+
         </div>
 
+        <!-- Page footer (outside the widgets grid) -->
+        <footer id="page-footer" class="mt-4 text-center text-xs text-gray-500 space-y-1 pb-4">
+            <p>Logget inn som {{ Auth::user()->name }} ({{ Auth::user()->email }})</p>
+            @if(Auth::viaRemember())
+                <p>⏱️ Sesjon utløper om {{ config('dashboard.remember_days', 30) }} dager</p>
+            @else
+                <p>⏱️ Sesjon utløper om {{ config('session.lifetime', 120) }} minutter</p>
+            @endif
+        </footer>
+
         <!-- Widget Picker Modal -->
-        <div x-show="showPicker" 
-             @open-widget-picker.window="showPicker = true"
+       <div x-show="showPicker" 
+           @open-widget-picker.window="showPicker = true"
              @click.self="showPicker = false"
              class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50"
              style="display: none;">
@@ -416,7 +411,19 @@
                                         Alle
                                     </button>
                                     @php
-                                        $categories = \App\Models\RssFeed::active()->pluck('category')->unique()->sort();
+                                        $categories = collect();
+                                        try {
+                                            if (\Illuminate\Support\Facades\Schema::hasTable('rss_feeds')) {
+                                                $categories = \App\Models\RssFeed::active()
+                                                    ->pluck('category')
+                                                    ->filter()
+                                                    ->unique()
+                                                    ->sort()
+                                                    ->values();
+                                            }
+                                        } catch (\Throwable $e) {
+                                            $categories = collect();
+                                        }
                                     @endphp
                                     @foreach($categories as $category)
                                         <button @click="rssCategoryFilter = '{{ $category }}'" 
@@ -429,7 +436,20 @@
 
                                 <!-- Feed list -->
                                 <div class="space-y-1 max-h-60 overflow-y-auto border border-gray-200 rounded-md p-2">
-                                    @foreach(\App\Models\RssFeed::active()->orderBy('category')->orderBy('name')->get() as $feed)
+                                    @php
+                                        $feeds = collect();
+                                        try {
+                                            if (\Illuminate\Support\Facades\Schema::hasTable('rss_feeds')) {
+                                                $feeds = \App\Models\RssFeed::active()
+                                                    ->orderBy('category')
+                                                    ->orderBy('name')
+                                                    ->get();
+                                            }
+                                        } catch (\Throwable $e) {
+                                            $feeds = collect();
+                                        }
+                                    @endphp
+                                    @foreach($feeds as $feed)
                                         <label x-show="rssCategoryFilter === null || rssCategoryFilter === '{{ $feed->category }}'"
                                                class="flex items-start gap-2 p-1.5 hover:bg-gray-50 rounded cursor-pointer">
                                             <input type="checkbox" 
@@ -784,6 +804,32 @@
                     } catch (error) {
                         console.error('Error adding widget:', error);
                         alert('Kunne ikke legge til widget. Prøv igjen.');
+                    }
+                },
+
+                async removeWidget(userWidgetId, widgetName) {
+                    if (!confirm(`Er du sikker på at du vil fjerne '${widgetName}'?`)) {
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch(`/my-widgets/${userWidgetId}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'Accept': 'application/json'
+                            }
+                        });
+
+                        if (response.ok) {
+                            // Reload page to show updated dashboard
+                            window.location.reload();
+                        } else {
+                            alert('Kunne ikke fjerne widget. Prøv igjen.');
+                        }
+                    } catch (error) {
+                        console.error('Error removing widget:', error);
+                        alert('Kunne ikke fjerne widget. Prøv igjen.');
                     }
                 }
             }

@@ -1,0 +1,4 @@
+# Widget Lock Files
+# These are local lock files to prevent editing widgets
+# Each developer has their own lock state
+.*.lock

@@ -67,9 +67,18 @@ class RefreshWidgetsCommand extends Command
         }
 
         // Check if this is a user-specific widget
-        $userWidgets = \App\Models\UserWidget::with('user')
-            ->where('widget_id', $widget->id)
-            ->get();
+        // Support both new schema (widget_id) and legacy schema (widget_key)
+        $hasWidgetId = \Schema::hasColumn('user_widgets', 'widget_id');
+        
+        if ($hasWidgetId) {
+            $userWidgets = \App\Models\UserWidget::with('user')
+                ->where('widget_id', $widget->id)
+                ->get();
+        } else {
+            $userWidgets = \App\Models\UserWidget::with('user')
+                ->where('widget_key', $widget->key)
+                ->get();
+        }
 
         if ($userWidgets->isNotEmpty()) {
             // Refresh for each user
@@ -142,9 +151,18 @@ class RefreshWidgetsCommand extends Command
             }
 
             // Check if this widget has user-specific instances
-            $userWidgets = \App\Models\UserWidget::with('user')
-                ->where('widget_id', $widget->id)
-                ->get();
+            // Support both new schema (widget_id) and legacy schema (widget_key)
+            $hasWidgetId = \Schema::hasColumn('user_widgets', 'widget_id');
+            
+            if ($hasWidgetId) {
+                $userWidgets = \App\Models\UserWidget::with('user')
+                    ->where('widget_id', $widget->id)
+                    ->get();
+            } else {
+                $userWidgets = \App\Models\UserWidget::with('user')
+                    ->where('widget_key', $widget->key)
+                    ->get();
+            }
 
             if ($userWidgets->isNotEmpty()) {
                 // Refresh for each user

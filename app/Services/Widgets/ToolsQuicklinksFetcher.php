@@ -27,12 +27,32 @@ class ToolsQuicklinksFetcher extends BaseWidgetFetcher
     
     /**
      * Get quicklinks from database/storage
-     * For now returns empty array - links will be managed via API
      */
     protected function getQuicklinks(): array
     {
-        // Links are stored in user preferences or separate table
-        // For now, return empty array
-        return [];
+        // Check if user widget is set (user-specific widget)
+        if (!$this->userWidget) {
+            return [];
+        }
+
+        // Check if quicklinks table exists
+        if (!\Schema::hasTable('quicklinks')) {
+            return [];
+        }
+
+        // Get user's quicklinks from database
+        $links = \DB::table('quicklinks')
+            ->where('user_id', $this->userWidget->user_id)
+            ->orderBy('sort_order')
+            ->get();
+
+        return $links->map(function ($link) {
+            return [
+                'id' => $link->id,
+                'title' => $link->title,
+                'url' => $link->url,
+                'sort_order' => $link->sort_order,
+            ];
+        })->toArray();
     }
 }
