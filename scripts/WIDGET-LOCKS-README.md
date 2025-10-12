@@ -5,6 +5,7 @@
 ### Status & Overview
 ```bash
 ./scripts/widget-status.sh           # Show all widget lock status
+sudo ./scripts/setup-widget-admin.sh # (Optional) Require admin password for unlocks
 ```
 
 ### Lock Management
@@ -44,6 +45,16 @@
 - Lock file: `resources/views/widgets/.widget-name.lock`
 - Pre-commit hook prevents committing locked widgets
 - Only unlocked widgets can be modified
+
+### Optional: Admin Password for Unlocks
+
+If you want unlocks to require an admin password, configure once as root:
+
+```bash
+sudo ./scripts/setup-widget-admin.sh
+```
+
+This stores a SHA-256 hash at `/etc/smartoversikt/widget_admin.hash` (0600). When present, `./scripts/unlock-widget.sh` will prompt for the password interactively and refuse to run in a non-interactive environment. The password is never stored in the repo or environment.
 
 ## Protection Status
 
