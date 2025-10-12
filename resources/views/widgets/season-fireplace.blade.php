@@ -11,6 +11,7 @@
       </button>
     </div>
   </div>
+</div>
   <div class="flex-1">
     <div x-ref="fireFrame" class="relative rounded-lg overflow-hidden ring-1 ring-amber-500/20 shadow-inner" style="background: radial-gradient(120% 80% at 50% 80%, rgba(251,191,36,0.10), rgba(17,24,39,1))">
       <canvas x-ref="fireCanvas" class="w-full block" style="height:14rem; min-height:14rem;"></canvas>
