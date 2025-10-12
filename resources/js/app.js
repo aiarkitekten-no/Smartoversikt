@@ -29,7 +29,7 @@ document.addEventListener('alpine:init', () => {
                 'system.disk': 120,
                 'system.cron-jobs': 120,
                 'system.error-log': 60,
-                'mail.imap': 300,
+                'mail.imap': 180,
                 'weather.yr': 1800,
                 'news.rss': 600,
                 'dev.github': 300,

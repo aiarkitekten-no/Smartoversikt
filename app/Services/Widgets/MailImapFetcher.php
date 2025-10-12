@@ -175,19 +175,29 @@ class MailImapFetcher extends BaseWidgetFetcher
             // Reopen the connection to ensure we're in the right mailbox
             imap_reopen($connection, $mailboxString);
             
+            // General mailbox info
             $check = imap_check($connection);
-            
-            // Get unread count - search for UNSEEN messages
-            $unread = imap_search($connection, 'UNSEEN', SE_UID);
-            $unreadCount = $unread ? count($unread) : 0;
-            
+
+            // Prefer imap_status for accurate unseen/recent counts
+            $status = @imap_status($connection, $mailboxString, SA_MESSAGES | SA_RECENT | SA_UNSEEN);
+
+            $unreadCount = 0;
+            $recentCount = 0;
+
+            if ($status !== false) {
+                $unreadCount = isset($status->unseen) ? (int)$status->unseen : 0;
+                $recentCount = isset($status->recent) ? (int)$status->recent : 0;
+            } else {
+                // Fallback: search for UNSEEN messages (UIDs)
+                $unread = @imap_search($connection, 'UNSEEN', SE_UID);
+                $unreadCount = $unread ? count($unread) : 0;
+                $recentCount = $check->Recent ?? 0;
+            }
+
             // Get today's messages
             $today = date('d-M-Y');
             $todayMessages = imap_search($connection, "SINCE \"$today\"", SE_UID);
             $todayCount = $todayMessages ? count($todayMessages) : 0;
-            
-            // Get recent count from check
-            $recentCount = $check->Recent ?? 0;
             
             return [
                 'total_messages' => $check->Nmsgs ?? 0,

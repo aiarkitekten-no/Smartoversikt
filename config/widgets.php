@@ -121,7 +121,7 @@ return [
             'name' => 'IMAP Mailbox',
             'description' => 'E-postboks statistikk via IMAP',
             'category' => 'mail',
-            'refresh_interval' => 300,
+            'refresh_interval' => 180,
             'fetcher' => \App\Services\Widgets\MailImapFetcher::class,
         ],
 
