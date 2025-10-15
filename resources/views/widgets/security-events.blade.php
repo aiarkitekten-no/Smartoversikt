@@ -26,6 +26,7 @@
     x-data="{
         ...widgetData('{{ $widget->key ?? 'security.events' }}'),
         blockingIp: null,
+        openDetailsIndex: null,
         async blockIp(ip, reason) {
             if (!confirm(`Blokker ${ip} i 2 timer?`)) return;
             
@@ -368,9 +369,40 @@
                                                      event.type === 'web_auth_failure' ? 'WEB' : 
                                                      event.type === 'suspicious_request' ? 'ATTACK' : 'OTHER'"></span>
                                         <span class="text-xs text-white text-opacity-50 ml-auto" x-text="event.relative_time"></span>
+                                        <!-- Info toggle for ATTACK events -->
+                                        <template x-if="event.type === 'suspicious_request'">
+                                            <button @click="openDetailsIndex = openDetailsIndex === index ? null : index"
+                                                    class="text-white text-opacity-80 hover:text-white text-xs px-1 py-0.5 border border-white border-opacity-20 rounded"
+                                                    title="Vis detaljer om angrepet">
+                                                ℹ️
+                                            </button>
+                                        </template>
                                     </div>
                                     
-                                    <div class="text-xs text-white text-opacity-90 mb-0.5" x-text="event.message"></div>
+                                    <div class="text-xs text-white text-opacity-90 mb-0.5 flex items-center gap-1">
+                                        <span x-text="event.message"></span>
+                                        <!-- Info icon for ATTACK details -->
+                                        <template x-if="event.type === 'suspicious_request'">
+                                            <div class="relative group inline-block">
+                                                <span class="cursor-pointer text-white text-opacity-70 hover:text-white" title="Se detaljer">ℹ️</span>
+                                                <div class="hidden group-hover:block absolute z-10 left-0 mt-1 w-64 bg-black bg-opacity-80 text-white text-opacity-90 text-xs p-2 rounded shadow-lg">
+                                                    <div class="font-semibold mb-1">Angrepsdetaljer</div>
+                                                    <div class="space-y-0.5">
+                                                        <div><span class="text-white text-opacity-60">Metode:</span> <span x-text="event.request?.method || '—'"></span></div>
+                                                        <div><span class="text-white text-opacity-60">Sti:</span> <span class="break-all" x-text="event.request?.path || '—'"></span></div>
+                                                        <div><span class="text-white text-opacity-60">HTTP:</span> <span x-text="event.response?.status || '—'"></span></div>
+                                                        <div><span class="text-white text-opacity-60">Resultat:</span> <span x-text="event.response?.outcome || '—'"></span></div>
+                                                        <template x-if="event.matched_patterns && event.matched_patterns.length">
+                                                            <div>
+                                                                <span class="text-white text-opacity-60">Mønstre:</span>
+                                                                <span x-text="event.matched_patterns.join(', ')"></span>
+                                                            </div>
+                                                        </template>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </div>
                                     
                                     <div class="flex items-center gap-2 text-xs text-white text-opacity-70 flex-wrap">
                                         <!-- IP with Country Flag -->
@@ -404,6 +436,42 @@
                                             </span>
                                         </template>
                                     </div>
+
+                                    <!-- Details panel for ATTACK events -->
+                                    <template x-if="event.type === 'suspicious_request' && openDetailsIndex === index">
+                                        <div class="mt-2 p-2 bg-black bg-opacity-20 rounded border border-white border-opacity-10 text-xs text-white text-opacity-90 space-y-1">
+                                            <div class="flex items-center gap-2">
+                                                <span class="font-semibold">Angrepsdetaljer:</span>
+                                                <span class="px-1.5 py-0.5 rounded bg-white bg-opacity-15"
+                                                      x-text="(event.attack_type || 'ukjent').toUpperCase()"></span>
+                                            </div>
+                                            <div>
+                                                Forespørsel: <span class="font-mono" x-text="(event.request?.method || '-') + ' ' + (event.request?.path || '-')"></span>
+                                            </div>
+                                            <div>
+                                                Resultat: <span class="font-mono" x-text="(event.response?.status ?? '-')"></span>
+                                                <span class="text-white text-opacity-70" x-text="'(' + (event.response?.outcome || '-') + ')' "></span>
+                                            </div>
+                                            <template x-if="event.matched_patterns && event.matched_patterns.length">
+                                                <div class="flex items-center gap-1 flex-wrap">
+                                                    <span class="text-white text-opacity-70">Mønstre:</span>
+                                                    <template x-for="pat in event.matched_patterns" :key="pat">
+                                                        <span class="px-1.5 py-0.5 rounded bg-white bg-opacity-15 font-mono">
+                                                            <span x-text="pat === 'sql_keyword' ? 'SQL' : pat === 'xss_payload' ? 'XSS' : pat === 'path_traversal' ? 'Traversal' : pat"></span>
+                                                        </span>
+                                                    </template>
+                                                </div>
+                                            </template>
+                                            <template x-if="event.auto_blocked">
+                                                <div class="text-green-200 font-semibold">
+                                                    Auto-blokkert i 30 min
+                                                    <template x-if="event.block_expires_at">
+                                                        <span class="text-white text-opacity-70 font-normal">(til <span x-text="formatDateTime(event.block_expires_at)"></span>)</span>
+                                                    </template>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </template>
 
                                     <!-- Block IP Button (for critical events) -->
                                     <template x-if="event.severity === 'critical' || event.type === 'suspicious_request'">

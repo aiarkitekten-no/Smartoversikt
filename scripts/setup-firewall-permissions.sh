@@ -34,8 +34,9 @@ $WEB_USER ALL=(ALL) NOPASSWD: /sbin/iptables -D DASHBOARD_BLOCKS -s * -j DROP
 # fail2ban commands for adding IPs to jails
 $WEB_USER ALL=(ALL) NOPASSWD: /usr/bin/fail2ban-client set * banip *
 
-# at command for scheduling unblock
-$WEB_USER ALL=(ALL) NOPASSWD: /usr/bin/at now + 2 hours
+# at command for scheduling unblock (minutes/hours)
+$WEB_USER ALL=(ALL) NOPASSWD: /usr/bin/at now + * minutes
+$WEB_USER ALL=(ALL) NOPASSWD: /usr/bin/at now + * hours
 EOF
 
 # Set correct permissions on sudoers file
@@ -60,5 +61,5 @@ iptables -C INPUT -j DASHBOARD_BLOCKS 2>/dev/null || iptables -I INPUT 1 -j DASH
 echo "✅ Firewall chain DASHBOARD_BLOCKS created"
 echo ""
 echo "Setup complete! The dashboard can now block IPs via:"
-echo "  - iptables (2 hour temporary blocks)"
+echo "  - iptables (temporary blocks: 30m auto or 2h manual)"
 echo "  - fail2ban (persistent blocks)"

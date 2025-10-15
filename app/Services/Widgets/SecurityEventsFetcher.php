@@ -17,6 +17,12 @@ class SecurityEventsFetcher extends BaseWidgetFetcher
     public function fetchData(): array
     {
         $events = $this->getSecurityEvents();
+        // Auto-block attackers outside Norway for 30 minutes (idempotent via cache)
+        try {
+            $this->autoBlockNonNorwayAttackers($events);
+        } catch (\Throwable $e) {
+            Log::warning('Auto-block process failed', ['error' => $e->getMessage()]);
+        }
         $summary = $this->getSummary();
         $riskScore = $this->calculateRiskScore($summary);
         
@@ -132,7 +138,7 @@ class SecurityEventsFetcher extends BaseWidgetFetcher
         foreach ($lines as $line) {
             if (empty(trim($line))) continue;
 
-            // Parse Laravel log entry
+            // Parse Laravel log entry timestamp
             if (preg_match('/\[(\d{4}-\d{2}-\d{2}[T\s]\d{2}:\d{2}:\d{2})/', $line, $matches)) {
                 $timestamp = Carbon::parse($matches[1]);
                 
@@ -153,61 +159,104 @@ class SecurityEventsFetcher extends BaseWidgetFetcher
                 ];
             }
         }
-
+        
         return $events;
     }
 
-    protected function getSuspiciousActivity(): array
+    protected function autoBlockNonNorwayAttackers(array &$events): void
     {
-        $events = [];
-        
-        // Use sudo wrapper to check for suspicious requests
-        $result = ReadonlyCommand::run("sudo /usr/local/bin/security-log-reader.sh nginx-suspicious");
-        
-        if (!$result['success'] || empty($result['output'])) {
-            return $events;
+        foreach ($events as &$event) {
+            if (($event['type'] ?? '') !== 'suspicious_request') continue;
+            $ip = $event['ip'] ?? null;
+            if (!$ip || $this->isPrivateIp($ip)) continue;
+
+            $countryCode = $event['country']['code'] ?? 'XX';
+            if ($countryCode === 'NO') continue;
+
+            $cacheKey = "security:auto_blocked:" . $ip;
+            if (Cache::get($cacheKey)) {
+                // already auto-blocked within TTL
+                $event['auto_blocked'] = true;
+                $event['block_ttl_minutes'] = 30;
+                continue;
+            }
+
+            // Attempt firewall block for 30 minutes
+            $blocked = $this->blockIpForMinutes($ip, 30, 'Auto-block: non-NO suspicious request');
+            if ($blocked) {
+                Cache::put($cacheKey, true, now()->addMinutes(30));
+                $event['auto_blocked'] = true;
+                $event['block_ttl_minutes'] = 30;
+                $event['block_expires_at'] = now()->addMinutes(30)->toIso8601String();
+                Log::warning('Auto-blocked IP (30m) outside NO', ['ip' => $ip, 'country' => $countryCode]);
+            }
         }
+        unset($event);
+    }
 
-        $lines = explode("\n", $result['output']);
-        
-        foreach ($lines as $line) {
-            if (empty(trim($line))) continue;
+    protected function blockIpForMinutes(string $ip, int $minutes, string $reason = 'Auto-block'): bool
+    {
+        try {
+            // Ensure chain exists and is attached
+            $commands = [
+                "sudo iptables -N DASHBOARD_BLOCKS 2>/dev/null || true",
+                "sudo iptables -C INPUT -j DASHBOARD_BLOCKS 2>/dev/null || sudo iptables -I INPUT 1 -j DASHBOARD_BLOCKS",
+                // Add drop rule
+                "sudo iptables -I DASHBOARD_BLOCKS 1 -s {$ip} -j DROP",
+                // Schedule auto-unblock after N minutes
+                "echo 'sudo iptables -D DASHBOARD_BLOCKS -s {$ip} -j DROP 2>/dev/null' | at now + {$minutes} minutes 2>/dev/null",
+            ];
 
-            // Parse nginx access log
-            if (preg_match('/([\d.]+) - - \[([^\]]+)\]/', $line, $matches)) {
-                $ip = $matches[1];
-                $timestamp = Carbon::parse($matches[2]);
-                
-                // Determine attack type from line content
-                $type = 'unknown';
-                if (preg_match('/(SELECT|UNION|INSERT)/i', $line)) {
-                    $type = 'sql';
-                } elseif (preg_match('/(<script|javascript:|onerror=)/i', $line)) {
-                    $type = 'xss';
-                } elseif (preg_match('/\\.\\.\\//', $line)) {
-                    $type = 'traversal';
+            foreach ($commands as $cmd) {
+                $res = ReadonlyCommand::run($cmd);
+                if (!$res['success']) {
+                    Log::warning('Auto-block command failed', ['cmd' => $cmd, 'output' => $res['output'] ?? '']);
                 }
-                
-                // Tillegg #3 & #5: GeoIP and Reputation
-                $country = $this->getCountryForIp($ip);
-                $reputation = $this->checkIpReputation($ip);
-                
-                $events[] = [
-                    'type' => 'suspicious_request',
-                    'severity' => 'critical',
-                    'ip' => $ip,
-                    'country' => $country,
-                    'reputation' => $reputation,
-                    'attack_type' => $type,
-                    'message' => "Mistenkelig forespørsel ({$type} forsøk)",
-                    'timestamp' => $timestamp->toIso8601String(),
-                    'timestamp_formatted' => $timestamp->format('d.m.Y H:i:s'),
-                    'relative_time' => $timestamp->diffForHumans(),
-                ];
+            }
+
+            // Also add to fail2ban as reinforcement
+            ReadonlyCommand::run("sudo fail2ban-client set recidive banip {$ip} 2>/dev/null");
+
+            Log::info('IP auto-block scheduled', [
+                'ip' => $ip,
+                'minutes' => $minutes,
+                'reason' => $reason,
+            ]);
+            return true;
+        } catch (\Exception $e) {
+            Log::error('Failed to auto-block IP', ['ip' => $ip, 'error' => $e->getMessage()]);
+            return false;
+        }
+    }
+
+    protected function isPrivateIp(string $ip): bool
+    {
+        $privateRanges = [
+            '10.0.0.0/8',
+            '172.16.0.0/12',
+            '192.168.0.0/16',
+            '127.0.0.0/8',
+            '::1/128',
+            'fc00::/7',
+        ];
+
+        foreach ($privateRanges as $range) {
+            if (strpos($range, '/') !== false) {
+                [$subnet, $mask] = explode('/', $range);
+                if (strpos($ip, ':') !== false) {
+                    if ($ip === '::1') return true;
+                    continue;
+                }
+                $ipLong = ip2long($ip);
+                $subnetLong = ip2long($subnet);
+                $maskLong = -1 << (32 - (int)$mask);
+                if (($ipLong & $maskLong) === ($subnetLong & $maskLong)) {
+                    return true;
+                }
             }
         }
 
-        return $events;
+        return false;
     }
 
     protected function getFail2banStatus(): ?array
