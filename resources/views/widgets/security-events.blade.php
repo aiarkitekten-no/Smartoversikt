@@ -388,10 +388,21 @@
                                                 <div class="hidden group-hover:block absolute z-10 left-0 mt-1 w-64 bg-black bg-opacity-80 text-white text-opacity-90 text-xs p-2 rounded shadow-lg">
                                                     <div class="font-semibold mb-1">Angrepsdetaljer</div>
                                                     <div class="space-y-0.5">
-                                                        <div><span class="text-white text-opacity-60">Metode:</span> <span x-text="event.request?.method || '—'"></span></div>
-                                                        <div><span class="text-white text-opacity-60">Sti:</span> <span class="break-all" x-text="event.request?.path || '—'"></span></div>
-                                                        <div><span class="text-white text-opacity-60">HTTP:</span> <span x-text="event.response?.status || '—'"></span></div>
-                                                        <div><span class="text-white text-opacity-60">Resultat:</span> <span x-text="event.response?.outcome || '—'"></span></div>
+                                                        <div><span class="text-white text-opacity-60">Metode:</span> <span x-text="event.method || '—'"></span></div>
+                                                        <div><span class="text-white text-opacity-60">Path:</span> <span class="break-all" x-text="event.path || '—'"></span></div>
+                                                        <div><span class="text-white text-opacity-60">Fil:</span> <span class="break-all" x-text="(event.path || '').split('?')[0].split('/').filter(Boolean).slice(-1)[0] || '—'"></span></div>
+                                                        <template x-if="event.host">
+                                                            <div><span class="text-white text-opacity-60">Kunde/domene:</span> <span x-text="event.host"></span></div>
+                                                        </template>
+                                                        <div><span class="text-white text-opacity-60">HTTP:</span> <span x-text="event.status || '—'"></span></div>
+                                                        <div><span class="text-white text-opacity-60">Resultat:</span>
+                                                            <span x-text="
+                                                                event.outcome === 'blocked' ? 'Sikret (blokkert)' :
+                                                                event.outcome === 'not_found' ? 'Sikret (ikke funnet)' :
+                                                                event.outcome === 'server_error' ? 'Mulig feilsituasjon (5xx)' :
+                                                                event.outcome === 'attempted' ? 'Forsøk (ikke blokkert)' : (event.outcome || '—')
+                                                            "></span>
+                                                        </div>
                                                         <template x-if="event.matched_patterns && event.matched_patterns.length">
                                                             <div>
                                                                 <span class="text-white text-opacity-60">Mønstre:</span>
@@ -446,11 +457,24 @@
                                                       x-text="(event.attack_type || 'ukjent').toUpperCase()"></span>
                                             </div>
                                             <div>
-                                                Forespørsel: <span class="font-mono" x-text="(event.request?.method || '-') + ' ' + (event.request?.path || '-')"></span>
+                                                Forespørsel: <span class="font-mono" x-text="(event.method || '-') + ' ' + (event.path || '-')"></span>
+                                            </div>
+                                            <template x-if="event.host">
+                                                <div>
+                                                    Kunde/domene: <span class="font-mono" x-text="event.host"></span>
+                                                </div>
+                                            </template>
+                                            <div>
+                                                Mål-fil: <span class="font-mono" x-text="(event.path || '').split('?')[0].split('/').filter(Boolean).slice(-1)[0] || '-' "></span>
                                             </div>
                                             <div>
-                                                Resultat: <span class="font-mono" x-text="(event.response?.status ?? '-')"></span>
-                                                <span class="text-white text-opacity-70" x-text="'(' + (event.response?.outcome || '-') + ')' "></span>
+                                                Resultat: <span class="font-mono" x-text="(event.status ?? '-')"></span>
+                                                <span class="text-white text-opacity-70" x-text="'(' + (
+                                                    event.outcome === 'blocked' ? 'Sikret (blokkert)' :
+                                                    event.outcome === 'not_found' ? 'Sikret (ikke funnet)' :
+                                                    event.outcome === 'server_error' ? 'Mulig feilsituasjon (5xx)' :
+                                                    event.outcome === 'attempted' ? 'Forsøk (ikke blokkert)' : (event.outcome || '-')
+                                                ) + ')'"></span>
                                             </div>
                                             <template x-if="event.matched_patterns && event.matched_patterns.length">
                                                 <div class="flex items-center gap-1 flex-wrap">

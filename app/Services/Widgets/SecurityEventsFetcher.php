@@ -188,7 +188,7 @@ class SecurityEventsFetcher extends BaseWidgetFetcher
 
             // Typical combined format:
             // 1.2.3.4 - - [15/Oct/2025:12:34:56 +0200] "GET /index.php?id=1 UNION SELECT HTTP/1.1" 403 1234 "-" "UA"
-            if (preg_match('/^(\S+)\s+\S+\s+\S+\s+\[([^\]]+)\]\s+"([A-Z]+)\s+([^"\s]+)[^\"]*"\s+(\d{3})/i', $line, $m)) {
+            if (preg_match('/^(\S+)\s+\S+\s+\S+\s+\[([^\]]+)\]\s+"([A-Z]+)\s+([^\"\s]+)[^\"]*"\s+(\d{3})/i', $line, $m)) {
                 $ip = $m[1];
                 $rawTs = $m[2];
                 $method = strtoupper($m[3]);
@@ -196,6 +196,13 @@ class SecurityEventsFetcher extends BaseWidgetFetcher
                 $status = (int)$m[5];
 
                 $timestamp = $this->parseNginxTimestamp($rawTs);
+
+                // Try to capture vhost/domain if present (depends on log_format)
+                $host = null;
+                if (preg_match('/\s"[A-Z]+\s[^\s]+\sHTTP\/[^\"]+"\s\d{3}\s\d+\s"[^"]*"\s"[^"]*"\s"([^"]+)"/i', $line, $hm)) {
+                    // Some formats log Host: header as extra field at the end; adjust if your log_format differs
+                    $host = $hm[1];
+                }
 
                 // Pattern detection
                 $matchedPatterns = [];
@@ -241,6 +248,7 @@ class SecurityEventsFetcher extends BaseWidgetFetcher
                     'reputation' => $reputation,
                     'method' => $method,
                     'path' => $path,
+                    'host' => $host,
                     'status' => $status,
                     'attack_type' => $attackType,
                     'matched_patterns' => $matchedPatterns,
