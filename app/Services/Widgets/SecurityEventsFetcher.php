@@ -62,9 +62,15 @@ class SecurityEventsFetcher extends BaseWidgetFetcher
         $webEvents = $this->getWebAuthFailures();
         $events = array_merge($events, $webEvents);
 
-        // Suspicious web requests / IP activity
+        // Suspicious web requests / IP activity (global nginx access)
         $suspicious = $this->getSuspiciousActivity();
         $events = array_merge($events, $suspicious);
+
+        // Per-vhost suspicious requests (if enabled)
+        $vhostEvents = $this->getVhostSuspiciousActivity();
+        if (!empty($vhostEvents)) {
+            $events = array_merge($events, $vhostEvents);
+        }
 
         // Sort by timestamp (newest first) and limit
         usort($events, fn($a, $b) => strtotime($b['timestamp'] ?? 'now') <=> strtotime($a['timestamp'] ?? 'now'));
@@ -195,6 +201,179 @@ class SecurityEventsFetcher extends BaseWidgetFetcher
         }
 
         return $events;
+    }
+
+    protected function getVhostSuspiciousActivity(): array
+    {
+        $events = [];
+        $cfg = config('security.vhosts', ['enabled' => false]);
+        if (!($cfg['enabled'] ?? false)) {
+            return $events;
+        }
+
+        $root = $cfg['root'] ?? '/var/www/vhosts';
+        $exclude = $cfg['exclude'] ?? [];
+        $maxLines = (int)($cfg['max_lines'] ?? 200);
+
+        // List domains under vhosts root
+        $list = ReadonlyCommand::run("ls -1 {$root}");
+        if (!$list['success'] || empty(trim($list['output']))) {
+            return $events;
+        }
+
+        $domains = array_filter(explode("\n", trim($list['output'])), function ($d) use ($exclude) {
+            $d = trim($d);
+            if ($d === '' || $d === '.' || $d === '..') return false;
+            if (in_array($d, $exclude, true)) return false;
+            return true;
+        });
+
+        $maxDomains = (int)($cfg['max_domains'] ?? 10);
+        if ($maxDomains > 0 && count($domains) > $maxDomains) {
+            $domains = array_slice($domains, 0, $maxDomains);
+        }
+
+        // For each domain, tail access log and filter suspicious entries locally
+        foreach ($domains as $domain) {
+            $domain = trim($domain);
+            // Skip if path is not a directory or looks invalid
+            if (!preg_match('/^[A-Za-z0-9._-]+$/', $domain)) continue;
+
+            $result = ReadonlyCommand::run('sudo /usr/local/bin/security-log-reader.sh vhost-access', [$domain, (string)$maxLines]);
+            if (!$result['success'] || empty($result['output'])) continue;
+
+            $lines = explode("\n", $result['output']);
+            foreach ($lines as $line) {
+                $line = trim($line);
+                if ($line === '') continue;
+
+                // Only consider suspicious patterns to reduce noise
+                if (!preg_match('/(UNION|SELECT|INSERT|UPDATE|DELETE|DROP|<script|javascript:|onerror=|\.\.|%2e%2e%2f|%00)/i', $line)) {
+                    continue;
+                }
+
+                $parsed = $this->parseNginxAccessLine($line);
+                if (!$parsed) continue;
+
+                // Enrich with domain as host if not present
+                if (empty($parsed['host'])) {
+                    $parsed['host'] = $domain;
+                }
+
+                $events[] = $parsed;
+            }
+        }
+
+        return $events;
+    }
+
+    /**
+     * Parse an nginx access log line (combined or similar) and return an event array
+     */
+    protected function parseNginxAccessLine(string $line): ?array
+    {
+        // Reuse the regexes from getSuspiciousActivity
+        if (!preg_match('/^(\S+)\s+\S+\s+\S+\s+\[([^\]]+)\]\s+"([A-Z]+)\s+([^\"\s]+)[^\"]*"\s+(\d{3})\s+(\d+)\s+"([^"]*)"\s+"([^"]*)"/i', $line, $m)) {
+            if (!preg_match('/^(\S+)\s+\S+\s+\S+\s+\[([^\]]+)\]\s+"([A-Z]+)\s+([^\"\s]+)[^\"]*"\s+(\d{3})/i', $line, $m)) {
+                return null;
+            }
+        }
+
+        $ip = $m[1];
+        $rawTs = $m[2];
+        $method = strtoupper($m[3]);
+        $path = $m[4];
+        $status = (int)($m[5] ?? 0);
+        $bytes = isset($m[6]) ? (int)$m[6] : null;
+        $referer = isset($m[7]) && $m[7] !== '-' ? $m[7] : null;
+        $userAgent = isset($m[8]) && $m[8] !== '-' ? $m[8] : null;
+
+        $timestamp = $this->parseNginxTimestamp($rawTs);
+
+        // Pattern detection
+        $matchedPatterns = [];
+        if (preg_match('/\b(UNION|SELECT|INSERT|UPDATE|DELETE|DROP)\b/i', $line)) {
+            $matchedPatterns[] = 'sql_keyword';
+        }
+        if (preg_match('/(<script|javascript:|onerror=)/i', $line)) {
+            $matchedPatterns[] = 'xss_payload';
+        }
+        if (preg_match('/(\.\./i|%2e%2e%2f|%00)/i', $line)) {
+            $matchedPatterns[] = 'path_traversal';
+        }
+
+        $attackType = 'unknown';
+        if (in_array('sql_keyword', $matchedPatterns, true)) {
+            $attackType = 'sql_injection';
+        } elseif (in_array('xss_payload', $matchedPatterns, true)) {
+            $attackType = 'xss';
+        } elseif (in_array('path_traversal', $matchedPatterns, true)) {
+            $attackType = 'path_traversal';
+        }
+
+        $outcome = 'attempted';
+        if ($status >= 500) {
+            $outcome = 'server_error';
+        } elseif ($status === 401 || $status === 403) {
+            $outcome = 'blocked';
+        } elseif ($status === 404) {
+            $outcome = 'not_found';
+        }
+
+        // Host extraction (same heuristics as before)
+        $host = null;
+        if (preg_match('/\s"Host:\s*([^"\s]+)"/i', $line, $hm)) {
+            $host = $hm[1];
+        }
+        if (!$host && $referer) {
+            $hostFromRef = is_string($referer) ? parse_url($referer, PHP_URL_HOST) : null;
+            if ($hostFromRef) $host = $hostFromRef;
+        }
+
+        // Derive katalog/fil
+        $cleanPath = $path ?: '/';
+        $qPos = strpos($cleanPath, '?');
+        if ($qPos !== false) {
+            $cleanPath = substr($cleanPath, 0, $qPos);
+        }
+        $segments = array_values(array_filter(explode('/', trim($cleanPath, '/'))));
+        $targetFile = !empty($segments) ? end($segments) : null;
+        $pathDir = null;
+        if (count($segments) > 1) {
+            $pathDir = '/' . implode('/', array_slice($segments, 0, -1));
+        } elseif (!empty($segments)) {
+            $pathDir = '/';
+        }
+
+        $country = $this->getCountryForIp($ip);
+        $reputation = $this->checkIpReputation($ip);
+        $severity = ($attackType !== 'unknown' || $status >= 500) ? 'critical' : 'warning';
+
+        $message = sprintf('%s %s', $method, $path);
+
+        return [
+            'type' => 'suspicious_request',
+            'severity' => $severity,
+            'ip' => $ip,
+            'country' => $country,
+            'reputation' => $reputation,
+            'method' => $method,
+            'path' => $path,
+            'path_dir' => $pathDir,
+            'target_file' => $targetFile,
+            'host' => $host,
+            'status' => $status,
+            'attack_type' => $attackType,
+            'matched_patterns' => $matchedPatterns,
+            'outcome' => $outcome,
+            'referer' => $referer,
+            'user_agent' => $userAgent,
+            'bytes' => $bytes,
+            'message' => $message,
+            'timestamp' => $timestamp->toIso8601String(),
+            'timestamp_formatted' => $timestamp->format('d.m.Y H:i:s'),
+            'relative_time' => $timestamp->diffForHumans(),
+        ];
     }
 
     protected function getSshFailedLogins(): array

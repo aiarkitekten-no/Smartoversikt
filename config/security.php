@@ -1,7 +1,24 @@
 <?php
 
 return [
-    
+    // Per-vhost log ingestion
+    'vhosts' => [
+        // Enable scanning of vhost logs (Plesk-style) for suspicious requests
+        'enabled' => true,
+        // Root path for vhosts
+        'root' => '/var/www/vhosts',
+        // Max number of lines to read per access log
+        'max_lines' => 200,
+        // Max number of domains to scan per refresh (avoid heavy load)
+        'max_domains' => 10,
+        // Domains to exclude to avoid recursion/noise
+        'exclude' => [
+            'system',
+            'default',
+            'smartesider.no',
+        ],
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | AbuseIPDB API Configuration

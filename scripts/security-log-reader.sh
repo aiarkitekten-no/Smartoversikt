@@ -38,6 +38,53 @@ case "$ACTION" in
         # Recent nginx errors
         tail -n 50 /var/log/nginx/error.log 2>/dev/null
         ;;
+    
+    vhost-access)
+        # Read a specific vhost access log safely
+        # Usage: security-log-reader.sh vhost-access <domain> [lines]
+        DOMAIN="$2"
+        LINES=${3:-200}
+        # Basic validation: domain-like and no path traversal
+        if [[ -z "$DOMAIN" ]] || [[ "$DOMAIN" =~ / ]] || [[ "$DOMAIN" =~ ".." ]]; then
+            echo "ERROR: Invalid domain"
+            exit 2
+        fi
+        LOG="/var/www/vhosts/${DOMAIN}/logs/access.log"
+        if [ ! -f "$LOG" ]; then
+            # Plesk rotates to access_log / proxy_access_log
+            LOG="/var/www/vhosts/${DOMAIN}/logs/access_log"
+        fi
+        if [ ! -f "$LOG" ]; then
+            LOG="/var/www/vhosts/${DOMAIN}/logs/proxy_access_log"
+        fi
+        if [ -f "$LOG" ]; then
+            tail -n "$LINES" "$LOG" 2>/dev/null
+        else
+            echo "ERROR: Access log not found for $DOMAIN"
+            exit 3
+        fi
+        ;;
+    
+    vhost-error)
+        # Read a specific vhost error log safely
+        # Usage: security-log-reader.sh vhost-error <domain> [lines]
+        DOMAIN="$2"
+        LINES=${3:-100}
+        if [[ -z "$DOMAIN" ]] || [[ "$DOMAIN" =~ / ]] || [[ "$DOMAIN" =~ ".." ]]; then
+            echo "ERROR: Invalid domain"
+            exit 2
+        fi
+        LOG="/var/www/vhosts/${DOMAIN}/logs/error.log"
+        if [ ! -f "$LOG" ]; then
+            LOG="/var/www/vhosts/${DOMAIN}/logs/error_log"
+        fi
+        if [ -f "$LOG" ]; then
+            tail -n "$LINES" "$LOG" 2>/dev/null
+        else
+            echo "ERROR: Error log not found for $DOMAIN"
+            exit 3
+        fi
+        ;;
         
     auth-summary)
         # Quick summary of auth activity
@@ -65,6 +112,8 @@ case "$ACTION" in
         echo "  nginx-suspicious  - Suspicious web requests (SQL/XSS/traversal)"
         echo "  nginx-404         - Recent 404 errors"
         echo "  nginx-errors      - Recent nginx error log"
+    echo "  vhost-access      - Tail a vhost access log (domain [lines])"
+    echo "  vhost-error       - Tail a vhost error log (domain [lines])"
         echo "  auth-summary      - Quick summary of auth activity"
         echo "  test              - Test if script is working"
         exit 1
