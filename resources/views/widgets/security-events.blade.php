@@ -385,12 +385,13 @@
                                         <template x-if="event.type === 'suspicious_request'">
                                             <div class="relative group inline-block">
                                                 <span class="cursor-pointer text-white text-opacity-70 hover:text-white" title="Se detaljer">ℹ️</span>
-                                                <div class="hidden group-hover:block absolute z-10 left-0 mt-1 w-64 bg-black bg-opacity-80 text-white text-opacity-90 text-xs p-2 rounded shadow-lg">
+                                                <div class="hidden group-hover:block absolute z-10 left-0 mt-1 w-72 bg-black bg-opacity-80 text-white text-opacity-90 text-xs p-2 rounded shadow-lg">
                                                     <div class="font-semibold mb-1">Angrepsdetaljer</div>
                                                     <div class="space-y-0.5">
                                                         <div><span class="text-white text-opacity-60">Metode:</span> <span x-text="event.method || '—'"></span></div>
                                                         <div><span class="text-white text-opacity-60">Path:</span> <span class="break-all" x-text="event.path || '—'"></span></div>
-                                                        <div><span class="text-white text-opacity-60">Fil:</span> <span class="break-all" x-text="(event.path || '').split('?')[0].split('/').filter(Boolean).slice(-1)[0] || '—'"></span></div>
+                                                        <div><span class="text-white text-opacity-60">Katalog:</span> <span class="break-all" x-text="event.path_dir || '—'"></span></div>
+                                                        <div><span class="text-white text-opacity-60">Fil:</span> <span class="break-all" x-text="event.target_file || '—'"></span></div>
                                                         <template x-if="event.host">
                                                             <div><span class="text-white text-opacity-60">Kunde/domene:</span> <span x-text="event.host"></span></div>
                                                         </template>
@@ -465,7 +466,10 @@
                                                 </div>
                                             </template>
                                             <div>
-                                                Mål-fil: <span class="font-mono" x-text="(event.path || '').split('?')[0].split('/').filter(Boolean).slice(-1)[0] || '-' "></span>
+                                                Katalog: <span class="font-mono" x-text="event.path_dir || '-' "></span>
+                                            </div>
+                                            <div>
+                                                Mål-fil: <span class="font-mono" x-text="event.target_file || '-' "></span>
                                             </div>
                                             <div>
                                                 Resultat: <span class="font-mono" x-text="(event.status ?? '-')"></span>

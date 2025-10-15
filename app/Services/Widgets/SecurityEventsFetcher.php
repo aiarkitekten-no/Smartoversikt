@@ -62,119 +62,20 @@ class SecurityEventsFetcher extends BaseWidgetFetcher
         $webEvents = $this->getWebAuthFailures();
         $events = array_merge($events, $webEvents);
 
-    // Suspicious web requests / IP activity
-    $suspiciousIps = $this->getSuspiciousActivity();
-    $events = array_merge($events, $suspiciousIps);
+        // Suspicious web requests / IP activity
+        $suspicious = $this->getSuspiciousActivity();
+        $events = array_merge($events, $suspicious);
 
-        // Sort by timestamp (newest first)
+        // Sort by timestamp (newest first) and limit
         usort($events, fn($a, $b) => strtotime($b['timestamp'] ?? 'now') <=> strtotime($a['timestamp'] ?? 'now'));
-
-        // Limit to last 30 events
         return array_slice($events, 0, 30);
     }
 
-    protected function getSshFailedLogins(): array
-    {
-        $events = [];
-        
-        // Use sudo wrapper to access auth.log
-        $result = ReadonlyCommand::run("sudo /usr/local/bin/security-log-reader.sh ssh-failed");
-        
-        if (!$result['success']) {
-            return $events;
-        }
-
-        $lines = explode("\n", $result['output']);
-        
-        foreach ($lines as $line) {
-            if (empty(trim($line))) continue;
-
-            // Parse SSH failed login
-            // Format: "Jan 15 12:34:56 hostname sshd[12345]: Failed password for username from 1.2.3.4 port 12345 ssh2"
-            if (preg_match('/(\w+\s+\d+\s+\d{2}:\d{2}:\d{2}).*Failed password for (\w+) from ([\d.]+)/', $line, $matches)) {
-                $timestamp = $this->parseAuthLogTimestamp($matches[1]);
-                $ip = $matches[3];
-                
-                // Tillegg #3 & #5: GeoIP and Reputation
-                $country = $this->getCountryForIp($ip);
-                $reputation = $this->checkIpReputation($ip);
-                
-                $events[] = [
-                    'type' => 'ssh_failed_login',
-                    'severity' => 'warning',
-                    'user' => $matches[2],
-                    'ip' => $ip,
-                    'country' => $country,
-                    'reputation' => $reputation,
-                    'message' => "SSH login feilet for bruker '{$matches[2]}'",
-                    'timestamp' => $timestamp->toIso8601String(),
-                    'timestamp_formatted' => $timestamp->format('d.m.Y H:i:s'),
-                    'relative_time' => $timestamp->diffForHumans(),
-                ];
-            }
-        }
-
-        return $events;
-    }
-
-    protected function getWebAuthFailures(): array
-    {
-        $events = [];
-        $logPath = storage_path('logs/laravel.log');
-
-        if (!file_exists($logPath)) {
-            return $events;
-        }
-
-        // Look for authentication failures in Laravel log
-        $result = ReadonlyCommand::run("grep -i 'authentication\\|login.*fail\\|unauthorized' {$logPath} 2>/dev/null | tail -n 20");
-        
-        if (!$result['success']) {
-            return $events;
-        }
-
-        $lines = explode("\n", $result['output']);
-        
-        foreach ($lines as $line) {
-            if (empty(trim($line))) continue;
-
-            // Parse Laravel log entry timestamp
-            if (preg_match('/\[(\d{4}-\d{2}-\d{2}[T\s]\d{2}:\d{2}:\d{2})/', $line, $matches)) {
-                $timestamp = Carbon::parse($matches[1]);
-                
-                // Try to extract IP if present
-                $ip = 'Unknown';
-                if (preg_match('/([\d.]+)/', $line, $ipMatches)) {
-                    $ip = $ipMatches[1];
-                }
-
-                $events[] = [
-                    'type' => 'web_auth_failure',
-                    'severity' => 'warning',
-                    'ip' => $ip,
-                    'message' => 'Web autentisering feilet',
-                    'timestamp' => $timestamp->toIso8601String(),
-                    'timestamp_formatted' => $timestamp->format('d.m.Y H:i:s'),
-                    'relative_time' => $timestamp->diffForHumans(),
-                ];
-            }
-        }
-        
-        return $events;
-    }
-
-    /**
-     * Parse suspicious web activity from nginx access log and enrich with details
-     * - Extracts: ip, timestamp, method, path, status
-     * - attack_type: sql_injection | xss | path_traversal | unknown
-     * - matched_patterns: [sql_keyword, xss_payload, path_traversal]
-     * - outcome: blocked | not_found | server_error | attempted
-     */
     protected function getSuspiciousActivity(): array
     {
         $events = [];
 
-        // Use sudo wrapper to safely read logs
+        // Safely read suspicious lines from nginx access log
         $result = ReadonlyCommand::run('sudo /usr/local/bin/security-log-reader.sh nginx-suspicious');
         if (!$result['success']) {
             return $events;
@@ -186,80 +87,173 @@ class SecurityEventsFetcher extends BaseWidgetFetcher
             $line = trim($line);
             if ($line === '') continue;
 
-            // Typical combined format:
-            // 1.2.3.4 - - [15/Oct/2025:12:34:56 +0200] "GET /index.php?id=1 UNION SELECT HTTP/1.1" 403 1234 "-" "UA"
-            if (preg_match('/^(\S+)\s+\S+\s+\S+\s+\[([^\]]+)\]\s+"([A-Z]+)\s+([^\"\s]+)[^\"]*"\s+(\d{3})/i', $line, $m)) {
-                $ip = $m[1];
-                $rawTs = $m[2];
-                $method = strtoupper($m[3]);
-                $path = $m[4];
-                $status = (int)$m[5];
-
-                $timestamp = $this->parseNginxTimestamp($rawTs);
-
-                // Try to capture vhost/domain if present (depends on log_format)
-                $host = null;
-                if (preg_match('/\s"[A-Z]+\s[^\s]+\sHTTP\/[^\"]+"\s\d{3}\s\d+\s"[^"]*"\s"[^"]*"\s"([^"]+)"/i', $line, $hm)) {
-                    // Some formats log Host: header as extra field at the end; adjust if your log_format differs
-                    $host = $hm[1];
+            // Combined log format example:
+            // 1.2.3.4 - - [15/Oct/2025:12:34:56 +0200] "GET /index.php?id=1 HTTP/1.1" 403 1234 "https://example.com/" "UA"
+            if (!preg_match('/^(\S+)\s+\S+\s+\S+\s+\[([^\]]+)\]\s+"([A-Z]+)\s+([^\"\s]+)[^\"]*"\s+(\d{3})\s+(\d+)\s+"([^"]*)"\s+"([^"]*)"/i', $line, $m)) {
+                // Fallback: try a simpler form without bytes/referer/UA
+                if (!preg_match('/^(\S+)\s+\S+\s+\S+\s+\[([^\]]+)\]\s+"([A-Z]+)\s+([^\"\s]+)[^\"]*"\s+(\d{3})/i', $line, $m)) {
+                    continue;
                 }
+            }
 
-                // Pattern detection
-                $matchedPatterns = [];
-                if (preg_match('/\b(UNION|SELECT|INSERT|UPDATE|DELETE|DROP)\b/i', $line)) {
-                    $matchedPatterns[] = 'sql_keyword';
-                }
-                if (preg_match('/(<script|javascript:|onerror=)/i', $line)) {
-                    $matchedPatterns[] = 'xss_payload';
-                }
-                if (preg_match('/(\.\.\/|%2e%2e%2f|%00)/i', $line)) {
-                    $matchedPatterns[] = 'path_traversal';
-                }
+            $ip = $m[1];
+            $rawTs = $m[2];
+            $method = strtoupper($m[3]);
+            $path = $m[4];
+            $status = (int)($m[5] ?? 0);
+            $bytes = isset($m[6]) ? (int)$m[6] : null;
+            $referer = isset($m[7]) && $m[7] !== '-' ? $m[7] : null;
+            $userAgent = isset($m[8]) && $m[8] !== '-' ? $m[8] : null;
 
-                $attackType = 'unknown';
-                if (in_array('sql_keyword', $matchedPatterns, true)) {
-                    $attackType = 'sql_injection';
-                } elseif (in_array('xss_payload', $matchedPatterns, true)) {
-                    $attackType = 'xss';
-                } elseif (in_array('path_traversal', $matchedPatterns, true)) {
-                    $attackType = 'path_traversal';
-                }
+            $timestamp = $this->parseNginxTimestamp($rawTs);
 
-                // Outcome based on status code
-                $outcome = 'attempted';
-                if ($status >= 500) {
-                    $outcome = 'server_error';
-                } elseif ($status === 401 || $status === 403) {
-                    $outcome = 'blocked';
-                } elseif ($status === 404) {
-                    $outcome = 'not_found';
-                }
+            // Pattern detection from full line
+            $matchedPatterns = [];
+            if (preg_match('/\b(UNION|SELECT|INSERT|UPDATE|DELETE|DROP)\b/i', $line)) {
+                $matchedPatterns[] = 'sql_keyword';
+            }
+            if (preg_match('/(<script|javascript:|onerror=)/i', $line)) {
+                $matchedPatterns[] = 'xss_payload';
+            }
+            if (preg_match('/(\.\.\/|%2e%2e%2f|%00)/i', $line)) {
+                $matchedPatterns[] = 'path_traversal';
+            }
 
+            $attackType = 'unknown';
+            if (in_array('sql_keyword', $matchedPatterns, true)) {
+                $attackType = 'sql_injection';
+            } elseif (in_array('xss_payload', $matchedPatterns, true)) {
+                $attackType = 'xss';
+            } elseif (in_array('path_traversal', $matchedPatterns, true)) {
+                $attackType = 'path_traversal';
+            }
+
+            // Outcome based on status code
+            $outcome = 'attempted';
+            if ($status >= 500) {
+                $outcome = 'server_error';
+            } elseif ($status === 401 || $status === 403) {
+                $outcome = 'blocked';
+            } elseif ($status === 404) {
+                $outcome = 'not_found';
+            }
+
+            // Try to extract host (vhost); fallback to referer host if present
+            $host = null;
+            if (preg_match('/\s"Host:\s*([^"\s]+)"/i', $line, $hm)) {
+                $host = $hm[1];
+            }
+            if (!$host && $referer) {
+                $hostFromRef = is_string($referer) ? parse_url($referer, PHP_URL_HOST) : null;
+                if ($hostFromRef) $host = $hostFromRef;
+            }
+
+            // Clean path and derive directory and target file
+            $cleanPath = $path ?: '/';
+            $qPos = strpos($cleanPath, '?');
+            if ($qPos !== false) {
+                $cleanPath = substr($cleanPath, 0, $qPos);
+            }
+            $segments = array_values(array_filter(explode('/', trim($cleanPath, '/'))));
+            $targetFile = !empty($segments) ? end($segments) : null;
+            $pathDir = null;
+            if (count($segments) > 1) {
+                $pathDir = '/' . implode('/', array_slice($segments, 0, -1));
+            } elseif (!empty($segments)) {
+                $pathDir = '/';
+            }
+
+            $country = $this->getCountryForIp($ip);
+            $reputation = $this->checkIpReputation($ip);
+            $severity = ($attackType !== 'unknown' || $status >= 500) ? 'critical' : 'warning';
+
+            $message = sprintf('%s %s', $method, $path);
+
+            $events[] = [
+                'type' => 'suspicious_request',
+                'severity' => $severity,
+                'ip' => $ip,
+                'country' => $country,
+                'reputation' => $reputation,
+                'method' => $method,
+                'path' => $path,
+                'path_dir' => $pathDir,
+                'target_file' => $targetFile,
+                'host' => $host,
+                'status' => $status,
+                'attack_type' => $attackType,
+                'matched_patterns' => $matchedPatterns,
+                'outcome' => $outcome,
+                'referer' => $referer,
+                'user_agent' => $userAgent,
+                'bytes' => $bytes,
+                'message' => $message,
+                'timestamp' => $timestamp->toIso8601String(),
+                'timestamp_formatted' => $timestamp->format('d.m.Y H:i:s'),
+                'relative_time' => $timestamp->diffForHumans(),
+            ];
+        }
+
+        return $events;
+    }
+
+    protected function getSshFailedLogins(): array
+    {
+        $events = [];
+        $result = ReadonlyCommand::run("sudo /usr/local/bin/security-log-reader.sh ssh-failed");
+        if (!$result['success']) return $events;
+        $lines = explode("\n", $result['output']);
+        foreach ($lines as $line) {
+            if (empty(trim($line))) continue;
+            if (preg_match('/(\w+\s+\d+\s+\d{2}:\d{2}:\d{2}).*Failed password for (\w+) from ([\d.]+)/', $line, $m)) {
+                $timestamp = $this->parseAuthLogTimestamp($m[1]);
+                $ip = $m[3];
                 $country = $this->getCountryForIp($ip);
                 $reputation = $this->checkIpReputation($ip);
-
-                $severity = ($attackType !== 'unknown' || $status >= 500) ? 'critical' : 'warning';
-
                 $events[] = [
-                    'type' => 'suspicious_request',
-                    'severity' => $severity,
+                    'type' => 'ssh_failed_login',
+                    'severity' => 'warning',
+                    'user' => $m[2],
                     'ip' => $ip,
                     'country' => $country,
                     'reputation' => $reputation,
-                    'method' => $method,
-                    'path' => $path,
-                    'host' => $host,
-                    'status' => $status,
-                    'attack_type' => $attackType,
-                    'matched_patterns' => $matchedPatterns,
-                    'outcome' => $outcome,
+                    'message' => "SSH login feilet for bruker '{$m[2]}'",
                     'timestamp' => $timestamp->toIso8601String(),
                     'timestamp_formatted' => $timestamp->format('d.m.Y H:i:s'),
                     'relative_time' => $timestamp->diffForHumans(),
                 ];
             }
         }
+        return $events;
+    }
 
+    protected function getWebAuthFailures(): array
+    {
+        $events = [];
+        $logPath = storage_path('logs/laravel.log');
+        if (!file_exists($logPath)) return $events;
+        $result = ReadonlyCommand::run("grep -i 'authentication\\|login.*fail\\|unauthorized' {$logPath} 2>/dev/null | tail -n 20");
+        if (!$result['success']) return $events;
+        $lines = explode("\n", $result['output']);
+        foreach ($lines as $line) {
+            if (empty(trim($line))) continue;
+            if (preg_match('/\[(\d{4}-\d{2}-\d{2}[T\s]\d{2}:\d{2}:\d{2})/', $line, $matches)) {
+                $timestamp = Carbon::parse($matches[1]);
+                $ip = 'Unknown';
+                if (preg_match('/([\d.]+)/', $line, $ipMatches)) {
+                    $ip = $ipMatches[1];
+                }
+                $events[] = [
+                    'type' => 'web_auth_failure',
+                    'severity' => 'warning',
+                    'ip' => $ip,
+                    'message' => 'Web autentisering feilet',
+                    'timestamp' => $timestamp->toIso8601String(),
+                    'timestamp_formatted' => $timestamp->format('d.m.Y H:i:s'),
+                    'relative_time' => $timestamp->diffForHumans(),
+                ];
+            }
+        }
         return $events;
     }
 
