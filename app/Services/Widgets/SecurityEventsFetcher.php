@@ -62,9 +62,9 @@ class SecurityEventsFetcher extends BaseWidgetFetcher
         $webEvents = $this->getWebAuthFailures();
         $events = array_merge($events, $webEvents);
 
-        // Suspicious IP activity
-        $suspiciousIps = $this->getSuspiciousActivity();
-        $events = array_merge($events, $suspiciousIps);
+    // Suspicious web requests / IP activity
+    $suspiciousIps = $this->getSuspiciousActivity();
+    $events = array_merge($events, $suspiciousIps);
 
         // Sort by timestamp (newest first)
         usort($events, fn($a, $b) => strtotime($b['timestamp'] ?? 'now') <=> strtotime($a['timestamp'] ?? 'now'));
@@ -163,6 +163,98 @@ class SecurityEventsFetcher extends BaseWidgetFetcher
         return $events;
     }
 
+    /**
+     * Parse suspicious web activity from nginx access log and enrich with details
+     * - Extracts: ip, timestamp, method, path, status
+     * - attack_type: sql_injection | xss | path_traversal | unknown
+     * - matched_patterns: [sql_keyword, xss_payload, path_traversal]
+     * - outcome: blocked | not_found | server_error | attempted
+     */
+    protected function getSuspiciousActivity(): array
+    {
+        $events = [];
+
+        // Use sudo wrapper to safely read logs
+        $result = ReadonlyCommand::run('sudo /usr/local/bin/security-log-reader.sh nginx-suspicious');
+        if (!$result['success']) {
+            return $events;
+        }
+
+        $lines = explode("\n", $result['output'] ?? '');
+
+        foreach ($lines as $line) {
+            $line = trim($line);
+            if ($line === '') continue;
+
+            // Typical combined format:
+            // 1.2.3.4 - - [15/Oct/2025:12:34:56 +0200] "GET /index.php?id=1 UNION SELECT HTTP/1.1" 403 1234 "-" "UA"
+            if (preg_match('/^(\S+)\s+\S+\s+\S+\s+\[([^\]]+)\]\s+"([A-Z]+)\s+([^"\s]+)[^\"]*"\s+(\d{3})/i', $line, $m)) {
+                $ip = $m[1];
+                $rawTs = $m[2];
+                $method = strtoupper($m[3]);
+                $path = $m[4];
+                $status = (int)$m[5];
+
+                $timestamp = $this->parseNginxTimestamp($rawTs);
+
+                // Pattern detection
+                $matchedPatterns = [];
+                if (preg_match('/\b(UNION|SELECT|INSERT|UPDATE|DELETE|DROP)\b/i', $line)) {
+                    $matchedPatterns[] = 'sql_keyword';
+                }
+                if (preg_match('/(<script|javascript:|onerror=)/i', $line)) {
+                    $matchedPatterns[] = 'xss_payload';
+                }
+                if (preg_match('/(\.\.\/|%2e%2e%2f|%00)/i', $line)) {
+                    $matchedPatterns[] = 'path_traversal';
+                }
+
+                $attackType = 'unknown';
+                if (in_array('sql_keyword', $matchedPatterns, true)) {
+                    $attackType = 'sql_injection';
+                } elseif (in_array('xss_payload', $matchedPatterns, true)) {
+                    $attackType = 'xss';
+                } elseif (in_array('path_traversal', $matchedPatterns, true)) {
+                    $attackType = 'path_traversal';
+                }
+
+                // Outcome based on status code
+                $outcome = 'attempted';
+                if ($status >= 500) {
+                    $outcome = 'server_error';
+                } elseif ($status === 401 || $status === 403) {
+                    $outcome = 'blocked';
+                } elseif ($status === 404) {
+                    $outcome = 'not_found';
+                }
+
+                $country = $this->getCountryForIp($ip);
+                $reputation = $this->checkIpReputation($ip);
+
+                $severity = ($attackType !== 'unknown' || $status >= 500) ? 'critical' : 'warning';
+
+                $events[] = [
+                    'type' => 'suspicious_request',
+                    'severity' => $severity,
+                    'ip' => $ip,
+                    'country' => $country,
+                    'reputation' => $reputation,
+                    'method' => $method,
+                    'path' => $path,
+                    'status' => $status,
+                    'attack_type' => $attackType,
+                    'matched_patterns' => $matchedPatterns,
+                    'outcome' => $outcome,
+                    'timestamp' => $timestamp->toIso8601String(),
+                    'timestamp_formatted' => $timestamp->format('d.m.Y H:i:s'),
+                    'relative_time' => $timestamp->diffForHumans(),
+                ];
+            }
+        }
+
+        return $events;
+    }
+
     protected function autoBlockNonNorwayAttackers(array &$events): void
     {
         foreach ($events as &$event) {
@@ -199,12 +291,12 @@ class SecurityEventsFetcher extends BaseWidgetFetcher
         try {
             // Ensure chain exists and is attached
             $commands = [
-                "sudo iptables -N DASHBOARD_BLOCKS 2>/dev/null || true",
-                "sudo iptables -C INPUT -j DASHBOARD_BLOCKS 2>/dev/null || sudo iptables -I INPUT 1 -j DASHBOARD_BLOCKS",
+                "sudo -n iptables -N DASHBOARD_BLOCKS 2>/dev/null || true",
+                "sudo -n iptables -C INPUT -j DASHBOARD_BLOCKS 2>/dev/null || sudo -n iptables -I INPUT 1 -j DASHBOARD_BLOCKS",
                 // Add drop rule
-                "sudo iptables -I DASHBOARD_BLOCKS 1 -s {$ip} -j DROP",
+                "sudo -n iptables -I DASHBOARD_BLOCKS 1 -s {$ip} -j DROP",
                 // Schedule auto-unblock after N minutes
-                "echo 'sudo iptables -D DASHBOARD_BLOCKS -s {$ip} -j DROP 2>/dev/null' | at now + {$minutes} minutes 2>/dev/null",
+                "echo 'sudo -n iptables -D DASHBOARD_BLOCKS -s {$ip} -j DROP 2>/dev/null' | at now + {$minutes} minutes 2>/dev/null",
             ];
 
             foreach ($commands as $cmd) {
@@ -215,7 +307,7 @@ class SecurityEventsFetcher extends BaseWidgetFetcher
             }
 
             // Also add to fail2ban as reinforcement
-            ReadonlyCommand::run("sudo fail2ban-client set recidive banip {$ip} 2>/dev/null");
+            ReadonlyCommand::run("sudo -n fail2ban-client set recidive banip {$ip} 2>/dev/null");
 
             Log::info('IP auto-block scheduled', [
                 'ip' => $ip,
@@ -231,29 +323,41 @@ class SecurityEventsFetcher extends BaseWidgetFetcher
 
     protected function isPrivateIp(string $ip): bool
     {
-        $privateRanges = [
-            '10.0.0.0/8',
-            '172.16.0.0/12',
-            '192.168.0.0/16',
-            '127.0.0.0/8',
-            '::1/128',
-            'fc00::/7',
-        ];
+        // IPv4 private ranges
+        if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+            $ranges = [
+                '10.0.0.0/8',
+                '172.16.0.0/12',
+                '192.168.0.0/16',
+                '127.0.0.0/8',
+            ];
 
-        foreach ($privateRanges as $range) {
-            if (strpos($range, '/') !== false) {
+            $ipLong = ip2long($ip);
+            foreach ($ranges as $range) {
                 [$subnet, $mask] = explode('/', $range);
-                if (strpos($ip, ':') !== false) {
-                    if ($ip === '::1') return true;
-                    continue;
-                }
-                $ipLong = ip2long($ip);
                 $subnetLong = ip2long($subnet);
-                $maskLong = -1 << (32 - (int)$mask);
+                $mask = (int)$mask;
+                if ($mask < 0 || $mask > 32) continue;
+                $maskLong = $mask === 0 ? 0 : (-1 << (32 - $mask));
                 if (($ipLong & $maskLong) === ($subnetLong & $maskLong)) {
                     return true;
                 }
             }
+            return false;
+        }
+
+        // IPv6 private/unique local and loopback
+        if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
+            if ($ip === '::1') return true; // loopback
+            $bin = inet_pton($ip);
+            if ($bin === false) return false;
+            $hex = bin2hex($bin);
+            // Unique local addresses fc00::/7 => prefix fc or fd
+            $prefix = strtolower(substr($hex, 0, 2));
+            if ($prefix === 'fc' || $prefix === 'fd') {
+                return true;
+            }
+            return false;
         }
 
         return false;
@@ -368,6 +472,16 @@ class SecurityEventsFetcher extends BaseWidgetFetcher
         // Need to add current year
         $year = Carbon::now()->year;
         return Carbon::parse("{$dateString} {$year}");
+    }
+
+    protected function parseNginxTimestamp(string $dateString): Carbon
+    {
+        // Nginx access log format: 15/Oct/2025:12:34:56 +0200
+        try {
+            return Carbon::createFromFormat('d/M/Y:H:i:s O', $dateString);
+        } catch (\Exception $e) {
+            return Carbon::now();
+        }
     }
 
     /**
